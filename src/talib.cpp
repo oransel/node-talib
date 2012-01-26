@@ -39,24 +39,24 @@ using namespace node;
 using namespace v8;
 
 class Talib : ObjectWrap {
-	
+    
   private:
-	
+    
   public:
     
-	Talib() {}
+    Talib() {}
     ~Talib() {}
 
     static Persistent<FunctionTemplate> persistent_function_template;
     
     static void Init(Handle<Object> target) { 
-		
+        
         // Define function template
-		HandleScope scope;
-		Local<FunctionTemplate> local_function_template = FunctionTemplate::New(New);
-		persistent_function_template = Persistent<FunctionTemplate>::New(local_function_template);
-		persistent_function_template->InstanceTemplate()->SetInternalFieldCount(1);
-		persistent_function_template->SetClassName(String::NewSymbol("TALib"));
+        HandleScope scope;
+        Local<FunctionTemplate> local_function_template = FunctionTemplate::New(New);
+        persistent_function_template = Persistent<FunctionTemplate>::New(local_function_template);
+        persistent_function_template->InstanceTemplate()->SetInternalFieldCount(1);
+        persistent_function_template->SetClassName(String::NewSymbol("TALib"));
         
         // Define fields
         target->Set(String::New("version"), String::New("0.1.0"));
@@ -65,164 +65,41 @@ class Talib : ObjectWrap {
         target->SetAccessor(String::New("functions"), GetFunctions, NULL);
         
         // Define functions
-        //NODE_SET_METHOD(target, "define", Define);
+        NODE_SET_METHOD(target, "explain", Explain);
         NODE_SET_METHOD(target, "execute", Execute);
         
-	}
+    }
     
     static Handle<Value> New(const Arguments& args) {
         
         // Create an instance
-		HandleScope scope;
-		Talib* talib_instance = new Talib();
-		talib_instance->Wrap(args.This());
-		return args.This();
+        HandleScope scope;
+        Talib* talib_instance = new Talib();
+        talib_instance->Wrap(args.This());
+        return args.This();
         
-	}
-	
+    }
+    
     static double *V8toDoubleArray(Local<Array> array) {
-		
+        
         // Get the array length
-		int length = array->Length();
+        int length = array->Length();
         
         // Allocate memory for double array
-		double *result = new double[length];
+        double *result = new double[length];
         
         // Store values in the double array
-		for (int i = 0; i < length; i++) { 
-			result[i] = array->Get(i)->NumberValue();
-		}
-        
-        // Return the double array result
-		return result;
-		
-	}
-    
-    static Handle<Value> GetFunctions(v8::Local<v8::String> property, const v8::AccessorInfo& info) {
-        
-        // Function group table
-        TA_StringTable *group_table;
-        
-        // Function table
-        TA_StringTable *func_table;
-        
-        // Function handle and information
-        const TA_FuncHandle *func_handle;
-        const TA_FuncInfo   *func_info;
-        
-        // Function name array
-        Local<Array> func_array = Array::New();
-        
-        // Function object
-        Local<Object> func_object;
-        
-        // Execution parameter objects
-        Local<Object> inParamObject;
-        Local<Object> inOptParamObject;
-        
-        // Execution parameters
-        Local<Array> inParams;
-        Local<Array> inOptParams;
-        Local<Array> outParams;
-        
-        // Function parameter information
-        const TA_InputParameterInfo     *input_paraminfo;
-        const TA_OptInputParameterInfo  *opt_paraminfo;
-        const TA_OutputParameterInfo    *output_paraminfo;
-        
-        // Function count
-        int func_count = 0;
-        
-        // Get the function groups
-        if (TA_GroupTableAlloc(&group_table) == TA_SUCCESS) {
-            
-            // Loop for all the function groups
-            for (unsigned int group_index=0; group_index < group_table->size; group_index++) {
-                
-                // Get the functions in the group
-                if (TA_FuncTableAlloc(group_table->string[group_index], &func_table) == TA_SUCCESS) {
-                    
-                    // Loop for all the functions
-                    for (unsigned int func_index=0; func_index < func_table->size; func_index++) {
-                        
-                        // Retreive the function information for the function handle
-                        TA_GetFuncHandle(func_table->string[func_index], &func_handle);
-                        TA_GetFuncInfo(func_handle, &func_info);
-                        
-                        // Create the function object
-                        func_object = Object::New();
-                        
-                        // Create the execution parameters
-                        inParams    = Array::New();
-                        inOptParams = Array::New();
-                        outParams   = Array::New();
-                        
-                        // Store the function information
-                        func_object->Set(String::New("name"), String::New(func_info->name));
-                        func_object->Set(String::New("group"), String::New(func_info->group));
-                        func_object->Set(String::New("hint"), String::New(func_info->hint));
-                        
-                        // Loop for all the input parameters
-                        for (int i=0; i < (int)func_info->nbInput; i++) {
-                            
-                            // Get the function input parameter information
-                            TA_GetInputParameterInfo(func_info->handle, i, &input_paraminfo);
-                            
-                            // Save the function parameter
-                            inParams->Set(i, String::New(input_paraminfo->paramName));
-                            
-                        }
-                        
-                        // Loop for all the optional input parameters
-                        for (int i=0; i < (int)func_info->nbOptInput; i++) {
-                            
-                            // Get the function input parameter information
-                            TA_GetOptInputParameterInfo(func_info->handle, i, &opt_paraminfo);
-                            
-                            // Save the function parameter
-                            inOptParams->Set(i, String::New(opt_paraminfo->paramName));
-                            
-                        }
-                        
-                        // Loop for all the output parameters
-                        for (int i=0; i < (int)func_info->nbOutput; i++) {
-                            
-                            // Get the function input parameter information
-                            TA_GetOutputParameterInfo(func_info->handle, i, &output_paraminfo);
-                            
-                            // Save the function parameter
-                            outParams->Set(i, String::New(output_paraminfo->paramName));
-                            
-                        }
-                        
-                        // Store the function parameters
-                        func_object->Set(String::New("inputs"), inParams);
-                        func_object->Set(String::New("optInputs"), inOptParams);
-                        func_object->Set(String::New("outputs"), outParams);
-                        
-                        // Save the function name to the array
-                        func_array->Set(func_count++, func_object);
-                        
-                    }
-                    
-                    // Clear function table memory
-                    TA_FuncTableFree(func_table);
-                }
-                
-            }
-            
-            // Clear function group table memory
-            TA_GroupTableFree(group_table);
-            
+        for (int i = 0; i < length; i++) { 
+            result[i] = array->Get(i)->NumberValue();
         }
         
-        // Return function names
-        return func_array;
+        // Return the double array result
+        return result;
         
     }
     
     static Handle<Value> Create_TA_Error(Local<Function> cb, TA_RetCode retCode) {
-
+        
         Local<Value> argv[1];
         Local<Object> result = Object::New();
         TA_RetCodeInfo retCodeInfo;
@@ -244,6 +121,147 @@ class Talib : ObjectWrap {
         cb->Call(Context::GetCurrent()->Global(), 1, argv);
         return Undefined();
         
+    }
+    
+    static Handle<Value> TA_FunctionExplanation(const char *func_name) {
+        
+        // Function handle and information
+        const TA_FuncHandle *func_handle;
+        const TA_FuncInfo   *func_info;
+        
+        // Function object
+        Local<Object> func_object;
+        
+        // Execution parameters
+        Local<Array> inParams;
+        Local<Array> inOptParams;
+        Local<Array> outParams;
+        
+        // Function parameter information
+        const TA_InputParameterInfo     *input_paraminfo;
+        const TA_OptInputParameterInfo  *opt_paraminfo;
+        const TA_OutputParameterInfo    *output_paraminfo;
+        
+        // Retreive the function information for the function handle
+        TA_GetFuncHandle(func_name, &func_handle);
+        TA_GetFuncInfo(func_handle, &func_info);
+        
+        // Create the function object
+        func_object = Object::New();
+        
+        // Create the execution parameters
+        inParams    = Array::New();
+        inOptParams = Array::New();
+        outParams   = Array::New();
+        
+        // Store the function information
+        func_object->Set(String::New("name"), String::New(func_info->name));
+        func_object->Set(String::New("group"), String::New(func_info->group));
+        func_object->Set(String::New("hint"), String::New(func_info->hint));
+        
+        // Loop for all the input parameters
+        for (int i=0; i < (int)func_info->nbInput; i++) {
+            
+            // Get the function input parameter information
+            TA_GetInputParameterInfo(func_info->handle, i, &input_paraminfo);
+            
+            // Save the function parameter
+            inParams->Set(i, String::New(input_paraminfo->paramName));
+            
+        }
+        
+        // Loop for all the optional input parameters
+        for (int i=0; i < (int)func_info->nbOptInput; i++) {
+            
+            // Get the function input parameter information
+            TA_GetOptInputParameterInfo(func_info->handle, i, &opt_paraminfo);
+            
+            // Save the function parameter
+            inOptParams->Set(i, String::New(opt_paraminfo->paramName));
+            
+        }
+        
+        // Loop for all the output parameters
+        for (int i=0; i < (int)func_info->nbOutput; i++) {
+            
+            // Get the function input parameter information
+            TA_GetOutputParameterInfo(func_info->handle, i, &output_paraminfo);
+            
+            // Save the function parameter
+            outParams->Set(i, String::New(output_paraminfo->paramName));
+            
+        }
+        
+        // Store the function parameters
+        func_object->Set(String::New("inputs"), inParams);
+        func_object->Set(String::New("optInputs"), inOptParams);
+        func_object->Set(String::New("outputs"), outParams);
+        
+        return func_object;
+        
+    }
+    
+    static Handle<Value> GetFunctions(v8::Local<v8::String> property, const v8::AccessorInfo& info) {
+        
+        // Function group table
+        TA_StringTable *group_table;
+        
+        // Function table
+        TA_StringTable *func_table;
+        
+        // Function name array
+        Local<Array> func_array = Array::New();
+        
+        // Function count
+        int func_count = 0;
+        
+        // Get the function groups
+        if (TA_GroupTableAlloc(&group_table) == TA_SUCCESS) {
+            
+            // Loop for all the function groups
+            for (unsigned int group_index=0; group_index < group_table->size; group_index++) {
+                
+                // Get the functions in the group
+                if (TA_FuncTableAlloc(group_table->string[group_index], &func_table) == TA_SUCCESS) {
+                    
+                    // Loop for all the functions
+                    for (unsigned int func_index=0; func_index < func_table->size; func_index++) {
+                        
+                        // Save the function name to the array
+                        func_array->Set(func_count++, TA_FunctionExplanation(func_table->string[func_index]));
+                        
+                    }
+                    
+                    // Clear function table memory
+                    TA_FuncTableFree(func_table);
+                }
+                
+            }
+            
+            // Clear function group table memory
+            TA_GroupTableFree(group_table);
+            
+        }
+        
+        // Return function names
+        return func_array;
+        
+    }
+    
+    static Handle<Value> Explain(const Arguments& args) {
+        
+        // Check the arguments
+        if (args.Length() < 1)
+            return ThrowException(Exception::TypeError(String::New("One argument required - Function name")));
+        
+        // Check the function name parameter
+        if (!args[0]->IsString())
+            return ThrowException(Exception::TypeError(String::New("First argument must be a String")));
+        
+        // Retreive the function name string
+        String::AsciiValue func_name(args[0]->ToString());
+        
+        return TA_FunctionExplanation(*func_name);
     }
     
     static Handle<Value> Execute(const Arguments& args) {
@@ -291,7 +309,7 @@ class Talib : ObjectWrap {
         
         // Execution out indexes
         int outBegIdx;
-		int outNBElement;
+        int outNBElement;
         
         // Check the arguments
         if (args.Length() < 2)
@@ -325,10 +343,10 @@ class Talib : ObjectWrap {
         // Check the end index
         if (!executeParameter->HasOwnProperty(String::New("endIdx")))
             return Create_Internal_Error(cb, "First argument must contain 'endIdx' field");
-		
+        
         // Refreive the start and end index
         int startIdx = executeParameter->Get(String::New("startIdx"))->Int32Value();
-		int endIdx = executeParameter->Get(String::New("endIdx"))->Int32Value();
+        int endIdx = executeParameter->Get(String::New("endIdx"))->Int32Value();
 
         // Retreive the function handle for function name
         if ((retCode = TA_GetFuncHandle(*func_name, &func_handle)) != TA_SUCCESS)
@@ -705,7 +723,7 @@ class Talib : ObjectWrap {
             }
             
             // Set the result array
-			outputArray->Set(String::New(output_paraminfo->paramName), resultArray);
+            outputArray->Set(String::New(output_paraminfo->paramName), resultArray);
             
         }
         
@@ -718,8 +736,8 @@ class Talib : ObjectWrap {
         return Undefined();
     
     }
-	
-	
+    
+    
 };
 
 Persistent<FunctionTemplate> Talib::persistent_function_template;
