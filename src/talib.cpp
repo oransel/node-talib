@@ -47,9 +47,9 @@ class Talib : ObjectWrap {
 	Talib() {}
     ~Talib() {}
 
-	static Persistent<FunctionTemplate> persistent_function_template;
+    static Persistent<FunctionTemplate> persistent_function_template;
     
-	static void Init(Handle<Object> target) { 
+    static void Init(Handle<Object> target) { 
 		
         // Define function template
 		HandleScope scope;
@@ -80,7 +80,7 @@ class Talib : ObjectWrap {
         
 	}
 	
-	static double *V8toDoubleArray(Local<Array> array) {
+    static double *V8toDoubleArray(Local<Array> array) {
 		
         // Get the array length
 		int length = array->Length();
