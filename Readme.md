@@ -8,7 +8,11 @@ A thin [node.js](http://nodejs.org) wrapper around [TA-LIB](http://ta-lib.org/),
 
 ## Examples
 
+Coming soon...
 
+## Roadmap
+
+* Add async processing
 
 ## License
 
