@@ -1,0 +1,27 @@
+{
+  "author": "Mustafa Oransel",
+  "name": "talib",
+  "description": "Technical Analysis Library",
+  "version": "0.1.0",
+  "homepage":"https://github.com/oransel/node-talib",
+  "repository": {
+    "type":"git",
+	"url":"https://github.com/oransel/node-talib.git"
+  },
+  "scripts":{
+	"preinstall":"cd ./src/lib && ./configure && make && cd ../../ && node-waf configure && node-waf build",
+	"preuninstall":"rm -rf build/* && cd ./src/lib && make maintainer-clean && cd ../../"
+  },
+  "main": "build/Release/talib.node",
+  "engines": {
+    "node": ">=0.6.0"
+  },
+  "dependencies": {},
+  "devDependencies": {},
+  "optionalDependencies": {},
+  "keywords":["talib","stocks","stock market"],
+  "licenses":[
+    {"type":"LGPL License",
+    "url":"http://www.gnu.org/licenses/lgpl.html"}
+  ]
+}
