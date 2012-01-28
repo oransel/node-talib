@@ -8,6 +8,7 @@
     "type":"git",
 	"url":"https://github.com/oransel/node-talib.git"
   },
+  "os": ["darwin", "linux"],
   "scripts":{
 	"preinstall":"cd ./src/lib && ./configure && make && cd ../../ && node-waf configure && node-waf build",
 	"preuninstall":"rm -rf build/* && cd ./src/lib && make maintainer-clean && cd ../../"
