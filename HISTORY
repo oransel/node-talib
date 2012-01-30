@@ -1,4 +1,7 @@
-0.1 2012-01-26:
+0.2 2012-01-29:
+	Asynchronous processing using libeio 
+
+0.1 2012-01-25:
 	Initial release support of ta-lib using native node.js interface
 	Supports function spec listing
 	Supports function execution with dynamic parameters
