@@ -46,6 +46,21 @@ class Talib : ObjectWrap {
     
     Talib() {}
     ~Talib() {}
+    
+    // Async work object
+    struct work_object {
+        Persistent<Function> cb;
+        TA_FuncHandle *func_handle;
+        int startIdx;
+        int endIdx;
+        int nbOutput;
+        TA_ParamHolder *func_params;
+        TA_RetCode retCode;
+        int outBegIdx;
+        int outNBElement;
+        double **outReal;
+        int **outInt;
+    };
 
     static Persistent<FunctionTemplate> persistent_function_template;
     
@@ -59,7 +74,7 @@ class Talib : ObjectWrap {
         persistent_function_template->SetClassName(String::NewSymbol("TALib"));
         
         // Define fields
-        target->Set(String::New("version"), String::New("0.1.0"));
+        target->Set(String::New("version"), String::New("0.2.0"));
        
         // Define accessors
         target->SetAccessor(String::New("functions"), GetFunctions, NULL);
@@ -273,10 +288,6 @@ class Talib : ObjectWrap {
         
         // Callback function
         Local<Function> cb;
-        Local<Value> argv[1];
-        
-        // Execution result object 
-        Local<Object> result;
         
         // Price values
         double *open            = NULL;
@@ -306,10 +317,6 @@ class Talib : ObjectWrap {
         const TA_InputParameterInfo     *input_paraminfo;
         const TA_OptInputParameterInfo  *opt_paraminfo;
         const TA_OutputParameterInfo    *output_paraminfo;
-        
-        // Execution out indexes
-        int outBegIdx;
-        int outNBElement;
         
         // Check the arguments
         if (args.Length() < 2)
@@ -624,20 +631,29 @@ class Talib : ObjectWrap {
             
         }
         
-        // Allocate memory for output results
-        double outReal[func_info->nbOutput][endIdx-startIdx+1];
-        int outInt[func_info->nbOutput][endIdx-startIdx+1];
-        
-        // Clear output results memory
-        for (int i=0; i < (int)func_info->nbOutput; i++) {
-            for (int x=0; x < (endIdx-startIdx+1); x++) {
-                outReal[i][x] = 0;
-                outInt[i][x] = 0;
-            }
-        }
+        // Setup the work object
+        work_object *wo = new work_object();
+        wo->func_handle = (TA_FuncHandle *)func_handle;
+        wo->startIdx = startIdx;
+        wo->endIdx = endIdx;
+        wo->nbOutput = func_info->nbOutput;
+        wo->func_params = func_params;
+        wo->outReal = new double*[func_info->nbOutput];
+        wo->outInt = new int*[func_info->nbOutput];
+        wo->cb = Persistent<Function>::New(cb);
         
         // Loop for all the ouput parameters
-        for (int i=0; i < (int)func_info->nbOutput; i++) {
+        for (int i=0; i < wo->nbOutput; i++) {
+            
+            // Allocate memory
+            wo->outReal[i] = new double[endIdx-startIdx+1];
+            wo->outInt[i] = new int[endIdx-startIdx+1];
+            
+            // Clear output results memory
+            for (int x=0; x < (endIdx-startIdx+1); x++) {
+                wo->outReal[i][x] = 0;
+                wo->outInt[i][x] = 0;
+            }
             
             // Get the output parameter information
             TA_GetOutputParameterInfo(func_info->handle, i, &output_paraminfo);
@@ -649,7 +665,7 @@ class Talib : ObjectWrap {
                 case TA_Output_Real:
                     
                     // Assign the real parameter memory
-                    TA_SetOutputParamRealPtr(func_params, i, &outReal[i][0]);
+                    TA_SetOutputParamRealPtr(func_params, i, &wo->outReal[i][0]);
                     
                     break;
                 
@@ -657,7 +673,7 @@ class Talib : ObjectWrap {
                 case TA_Output_Integer:
                     
                     // Assign the integer parameter memory
-                    TA_SetOutputParamIntegerPtr(func_params, i, &outInt[i][0]);
+                    TA_SetOutputParamIntegerPtr(func_params, i, &wo->outInt[i][0]);
                     
                     break;
                     
@@ -665,34 +681,61 @@ class Talib : ObjectWrap {
             
         }
         
+        // Queue the work
+        eio_custom(ExecuteWork, EIO_PRI_DEFAULT, ExecuteWorkDone, wo);
+        ev_ref(EV_DEFAULT_UC);
+        
+        return Undefined();
+        
+    }
+    
+    static void ExecuteWork(eio_req *req) {
+        
+        // Get the work object
+        work_object *wo = static_cast<work_object *>(req->data);
+        
         // Execute the function call with parameters declared
-        retCode = TA_CallFunc((const TA_ParamHolder *)func_params, startIdx, endIdx, &outBegIdx, &outNBElement);
+        wo->retCode = TA_CallFunc((const TA_ParamHolder *)wo->func_params, wo->startIdx, wo->endIdx, &wo->outBegIdx, &wo->outNBElement);
         
-        // Clear parameter holder memory
-        TA_ParamHolderFree(func_params);
+    }
+    
+    static int ExecuteWorkDone(eio_req *req) {
         
-        // Check for execution error
-        if (retCode != TA_SUCCESS)
-            return Create_TA_Error(cb, retCode);
-
-        // Create result object
-        result = Object::New();
+        HandleScope scope;
         
-        // Set beginning index and number of elements
-        result->Set(String::New("begIndex"), Number::New(outBegIdx));
-        result->Set(String::New("nbElement"), Number::New(outNBElement));
+        work_object *wo = static_cast<work_object *>(req->data);
+        ev_unref(EV_DEFAULT_UC);
         
         // Create the outputs object
         Local<Object> outputArray = Object::New();
         
+        // Execution result object 
+        Local<Object> result = Object::New();
+        
+        // Result args
+        Local<Value> argv[1];
+        
         // Determine the number of results
-        int resultLength = outBegIdx + outNBElement;
+        int resultLength = wo->outBegIdx + wo->outNBElement;
+        
+        // Function output parameter information
+        const TA_OutputParameterInfo *output_paraminfo;
+        
+        // Check for execution error
+        if (wo->retCode != TA_SUCCESS) {
+            //Create_TA_Error(wo->cb, wo->retCode);
+            goto execute_exit;
+        }
+        
+        // Set beginning index and number of elements
+        result->Set(String::New("begIndex"), Number::New(wo->outBegIdx));
+        result->Set(String::New("nbElement"), Number::New(wo->outNBElement));
         
         // Loop for all the output parameters
-        for (int i=0; i < (int)func_info->nbOutput; i++) {
+        for (int i=0; i < wo->nbOutput; i++) {
             
             // Get the output parameter information
-            TA_GetOutputParameterInfo(func_info->handle, i, &output_paraminfo);
+            TA_GetOutputParameterInfo(wo->func_handle, i, &output_paraminfo);
             
             // Create an array for results
             Local<Array> resultArray = Array::New(resultLength);
@@ -702,24 +745,24 @@ class Talib : ObjectWrap {
                 
                 // Determine the output type
                 switch(output_paraminfo->type) {
-                    
-                    // Output type real is needed
+                        
+                        // Output type real is needed
                     case TA_Output_Real:
                         
                         // Set the real output value
-                        resultArray->Set(x, Number::New(outReal[i][x]));
+                        resultArray->Set(x, Number::New(wo->outReal[i][x]));
                         
                         break;
-                    
-                    // Output type integer is needed
+                        
+                        // Output type integer is needed
                     case TA_Output_Integer:
                         
                         // Set the integer output value
-                        resultArray->Set(x, Number::New(outInt[i][x]));
+                        resultArray->Set(x, Number::New(wo->outInt[i][x]));
                         
                         break;
                 }
-                    
+                
             }
             
             // Set the result array
@@ -732,11 +775,29 @@ class Talib : ObjectWrap {
         
         // Return the execution result
         argv[0] = result;
-        cb->Call(Context::GetCurrent()->Global(), 1, argv);
-        return Undefined();
-    
+        wo->cb->Call(Context::GetCurrent()->Global(), 1, argv);
+
+    execute_exit:
+        
+        // Clear parameter holder memory
+        TA_ParamHolderFree(wo->func_params);
+        
+        // Dispose callback
+        wo->cb.Dispose();
+        
+        // Dispose output arrays
+        for (int i=0; i < wo->nbOutput; i++) {
+            delete wo->outReal[i];
+            delete wo->outInt[i];
+        }
+        delete wo->outReal;
+        delete wo->outInt;
+        
+        // Dispose work object
+        delete wo;
+        
+        return 0;
     }
-    
     
 };
 
