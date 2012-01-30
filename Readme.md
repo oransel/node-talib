@@ -70,10 +70,6 @@ For working examples look in the `examples/` directory. You can execute the exam
 
 	node examples/adx.js
 
-## Roadmap
-
-* Add async processing
-
 ## License
 
 Copyright (c) 2012 Mustafa Oransel
