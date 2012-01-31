@@ -74,7 +74,7 @@ class Talib : ObjectWrap {
         persistent_function_template->SetClassName(String::NewSymbol("TALib"));
         
         // Define fields
-        target->Set(String::New("version"), String::New("0.2.0"));
+        target->Set(String::New("version"), String::New("0.2.1"));
        
         // Define accessors
         target->SetAccessor(String::New("functions"), GetFunctions, NULL);
@@ -158,11 +158,15 @@ class Talib : ObjectWrap {
         const TA_OutputParameterInfo    *output_paraminfo;
         
         // Retreive the function information for the function handle
-        TA_GetFuncHandle(func_name, &func_handle);
-        TA_GetFuncInfo(func_handle, &func_info);
+        TA_RetCode handle_retcode = TA_GetFuncHandle(func_name, &func_handle);
+        TA_RetCode info_retcode = TA_GetFuncInfo(func_handle, &func_info);
         
         // Create the function object
         func_object = Object::New();
+        
+        // Check for error
+        if ((handle_retcode != TA_SUCCESS) || (info_retcode != TA_SUCCESS))
+            return func_object;
         
         // Create the execution parameters
         inParams    = Array::New();
