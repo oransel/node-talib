@@ -1,3 +1,6 @@
+0.2.1 2012-01-29:
+	Fixes explain function crashes
+
 0.2 2012-01-29:
 	Asynchronous processing using libeio 
 
