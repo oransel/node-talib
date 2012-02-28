@@ -2,7 +2,7 @@
   "author": "Mustafa Oransel",
   "name": "talib",
   "description": "Technical Analysis Library",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "homepage":"https://github.com/oransel/node-talib",
   "repository": {
     "type":"git",
