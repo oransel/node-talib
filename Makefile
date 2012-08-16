@@ -2,7 +2,7 @@
 # Similar results can be achieved with npm
 
 all:
-	@cd ./src/lib && node build.js && cd ../../ && node-waf configure && node-waf build
+	@cd ./src/lib && node build.js && cd ../../ && node-gyp configure && node-gyp build
 	@echo
 	@echo build complete
 	
