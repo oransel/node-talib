@@ -43,7 +43,10 @@ console.log(function_desc.optInputs);
 console.log(function_desc.outputs);
 ```
 
+
 Assuming the market data is readily available, you can calculate an indicator by calling the `execute` function with the name of the indicator and required input parameters.
+
+
 
 ``` js
 // market data as arrays
@@ -64,6 +67,25 @@ talib.execute({
     console.log(result);
 
 });
+```
+
+Input parameters can be discovered by:
+
+```
+console.log("Inputs:", talib.explain("ADX").inputs);
+# Inputs: ['inPriceHLC']   // Pass the keys  'high', 'low', 'close' with an array of values
+
+console.log("Inputs:", talib.explain("AVGPRICE").inputs);
+# Inputs: ['inPriceOHLC']   // Pass the keys  'open', 'high', 'low', 'close' with an array of values
+
+console.log("Inputs:", talib.explain("MFI").inputs);
+# Inputs: ['inPriceHLCV']  // Pass the keys  'high', 'low', 'close', 'volume' with an array of values
+
+console.log("Inputs:", talib.explain("LINEARREG").inputs);
+# Inputs: ['inReal']  // Pass the key 'inReal' with an array of values
+
+// There are a few other various for inPrice[H|L|C|O|V] as well as inReal0, inReal1
+
 ```
 
 For working examples look in the `examples/` directory. You can execute the examples using node.
