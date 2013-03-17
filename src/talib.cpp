@@ -687,34 +687,34 @@ class Talib : ObjectWrap {
         
         // Queue the work
         uv_work_t *req = new uv_work_t;
-	req->data = wo;
+        req->data = wo;
 
-	uv_queue_work(uv_default_loop(), req, ExecuteWork, ExecuteWorkDone);
-	 eio_custom(ExecuteWork, EIO_PRI_DEFAULT, ExecuteWorkDone, wo);
+        uv_queue_work(uv_default_loop(), req, ExecuteWork, ExecuteWorkDone);
         uv_ref((uv_handle *) &reg);
+
         return Undefined();
         
     }
     
-    static void ExecuteWork(uv_work_t *req, ) {
+    static void ExecuteWork(uv_work_t *req) {
         
         // Get the work object
-	uv_queue_work(uv_default_loop(), req, ExecuteWork, ExecuteWorkDone);
+        uv_queue_work(uv_default_loop(), req, ExecuteWork, ExecuteWorkDone);
         
         // Execute the function call with parameters declared
         wo->retCode = TA_CallFunc((const TA_ParamHolder *)wo->func_params, wo->startIdx, wo->endIdx, &wo->outBegIdx, &wo->outNBElement);
         
     }
     
-    static int ExecuteWorkDone(eio_req *req) {
+    static void ExecuteWorkDone(uv_work_t *req) {
         
         HandleScope scope;
         
-	uv_work_t *req = new uv_work_t;
-	req->data = wo;
+        uv_work_t *req = new uv_work_t;
+        req->data = wo;
         uv_unref((uv_handle_t*) &req)
         work_object *wo = static_cast<work_object *>(req->data);
-	uv_unref((uv_hangle_t*) req);
+        uv_unref((uv_hangle_t*) req);
         
         // Create the outputs object
         Local<Object> outputArray = Object::New();
