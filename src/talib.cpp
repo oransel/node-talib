@@ -685,13 +685,12 @@ class Talib : ObjectWrap {
             
         }
         
-        // Queue the work
         uv_work_t *req = new uv_work_t;
         req->data = wo;
-
+        // Queue the work
         uv_queue_work(uv_default_loop(), req, ExecuteWork, ExecuteWorkDone);
-        uv_ref((uv_handle *) &reg);
-
+        uv_ref((uv_handle_t *) &req);
+        
         return Undefined();
         
     }
@@ -699,23 +698,19 @@ class Talib : ObjectWrap {
     static void ExecuteWork(uv_work_t *req) {
         
         // Get the work object
-        uv_queue_work(uv_default_loop(), req, ExecuteWork, ExecuteWorkDone);
+        work_object *wo = static_cast<work_object *>(req->data);
         
         // Execute the function call with parameters declared
         wo->retCode = TA_CallFunc((const TA_ParamHolder *)wo->func_params, wo->startIdx, wo->endIdx, &wo->outBegIdx, &wo->outNBElement);
         
     }
     
-    static void ExecuteWorkDone(uv_work_t *req) {
+    static void ExecuteWorkDone(uv_work_t *req, int status) {
         
         HandleScope scope;
         
-        uv_work_t *req = new uv_work_t;
-        req->data = wo;
-        uv_unref((uv_handle_t*) &req)
         work_object *wo = static_cast<work_object *>(req->data);
-        uv_unref((uv_hangle_t*) req);
-        
+        uv_unref((uv_handle_t*) &req); 
         // Create the outputs object
         Local<Object> outputArray = Object::New();
         
@@ -806,7 +801,7 @@ class Talib : ObjectWrap {
         // Dispose work object
         delete wo;
         
-        return delete re;
+        return delete req;
     }
     
 };
