@@ -7,7 +7,7 @@
             ],
             'link_settings': {
                 'libraries': [
-                    '../src/lib/src/.libs/libta_lib.a'
+                    '../src/lib/lib/libta_libc_csr.a'
                 ]
             }
         }
