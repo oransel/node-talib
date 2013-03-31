@@ -7,6 +7,6 @@ all:
 	@echo build complete
 	
 clean:
-	@rm -rf build/* && cd ./src/lib && make maintainer-clean && cd ../../
+	@rm -rf build/* && cd ./src/lib && node clean.js && cd ../../
 	@echo
 	@echo clean complete
