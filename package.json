@@ -2,7 +2,7 @@
   "author": "Mustafa Oransel",
   "name": "talib",
   "description": "Technical Analysis Library",
-  "version": "0.2.7",
+  "version": "0.2.8",
   "homepage":"https://github.com/oransel/node-talib",
   "repository": {
     "type":"git",
@@ -11,7 +11,7 @@
   "os": ["darwin", "linux"],
   "scripts":{
     "preinstall":"cd ./src/lib && node build.js && cd ../../ && node-gyp configure && node-gyp build",
-    "preuninstall":"rm -rf build/* && cd ./src/lib && make maintainer-clean && cd ../../"
+    "preuninstall":"rm -rf build/* && cd ./src/lib && node clean.js && cd ../../"
   },
   "main": "build/Release/talib.node",
   "engines": {
