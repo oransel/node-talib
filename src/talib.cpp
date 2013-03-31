@@ -685,15 +685,17 @@ class Talib : ObjectWrap {
             
         }
         
+        uv_work_t *req = new uv_work_t;
+        req->data = wo;
         // Queue the work
-        eio_custom(ExecuteWork, EIO_PRI_DEFAULT, ExecuteWorkDone, wo);
-        ev_ref(EV_DEFAULT_UC);
+        uv_queue_work(uv_default_loop(), req, ExecuteWork, ExecuteWorkDone);
+        uv_ref((uv_handle_t *) &req);
         
         return Undefined();
         
     }
     
-    static void ExecuteWork(eio_req *req) {
+    static void ExecuteWork(uv_work_t *req) {
         
         // Get the work object
         work_object *wo = static_cast<work_object *>(req->data);
@@ -703,13 +705,12 @@ class Talib : ObjectWrap {
         
     }
     
-    static int ExecuteWorkDone(eio_req *req) {
+    static void ExecuteWorkDone(uv_work_t *req, int status) {
         
         HandleScope scope;
         
         work_object *wo = static_cast<work_object *>(req->data);
-        ev_unref(EV_DEFAULT_UC);
-        
+        uv_unref((uv_handle_t*) &req); 
         // Create the outputs object
         Local<Object> outputArray = Object::New();
         
@@ -800,7 +801,7 @@ class Talib : ObjectWrap {
         // Dispose work object
         delete wo;
         
-        return 0;
+        return delete req;
     }
     
 };
