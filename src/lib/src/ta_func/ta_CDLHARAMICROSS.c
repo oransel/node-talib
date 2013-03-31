@@ -1,4 +1,4 @@
-/* TA-LIB Copyright (c) 1999-2007, Mario Fortier
+/* TA-LIB Copyright (c) 1999-2008, Mario Fortier
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or
@@ -43,6 +43,8 @@
  *  MMDDYY BY   Description
  *  -------------------------------------------------------------------
  *  102404 AC   Creation           
+ *  040309 AC   Increased flexibility to allow real bodies matching
+ *              on one end (Greg Morris - "Candlestick charting explained")
  *
  */
 
@@ -111,13 +113,13 @@
 /* Generated */ #if defined( _MANAGED ) && defined( USE_SUBARRAY )
 /* Generated */ enum class Core::RetCode Core::CdlHaramiCross( int    startIdx,
 /* Generated */                                                int    endIdx,
-/* Generated */                                                SubArray^    inOpen,
-/* Generated */                                                SubArray^    inHigh,
-/* Generated */                                                SubArray^    inLow,
-/* Generated */                                                SubArray^    inClose,
+/* Generated */                                                SubArray<double>^ inOpen,
+/* Generated */                                                SubArray<double>^ inHigh,
+/* Generated */                                                SubArray<double>^ inLow,
+/* Generated */                                                SubArray<double>^ inClose,
 /* Generated */                                                [Out]int%    outBegIdx,
 /* Generated */                                                [Out]int%    outNBElement,
-/* Generated */                                                cli::array<int>^  outInteger )
+/* Generated */                                                SubArray<int>^  outInteger )
 /* Generated */ #elif defined( _MANAGED )
 /* Generated */ enum class Core::RetCode Core::CdlHaramiCross( int    startIdx,
 /* Generated */                                                int    endIdx,
@@ -219,6 +221,10 @@
    }
    i = startIdx;
 
+#ifdef TA_LIB_PRO
+      /* Section for code distributed with TA-Lib Pro only. */
+#endif
+
    /* Proceed with the calculation for the requested range.
     * Must have:
     * - first candle: long white (black) real body
@@ -231,14 +237,25 @@
    outIdx = 0;
    do
    {
+#ifdef TA_LIB_PRO
+      /* Section for code distributed with TA-Lib Pro only. */
+#else
         if( TA_REALBODY(i-1) > TA_CANDLEAVERAGE( BodyLong, BodyLongPeriodTotal, i-1 ) &&         // 1st: long
-            TA_REALBODY(i) <= TA_CANDLEAVERAGE( BodyDoji, BodyDojiPeriodTotal, i ) &&            // 2nd: doji
-            max( inClose[i], inOpen[i] ) < max( inClose[i-1], inOpen[i-1] ) &&                      //      engulfed by 1st
-            min( inClose[i], inOpen[i] ) > min( inClose[i-1], inOpen[i-1] )
-          )
-            outInteger[outIdx++] = -TA_CANDLECOLOR(i-1) * 100;
+            TA_REALBODY(i) <= TA_CANDLEAVERAGE( BodyDoji, BodyDojiPeriodTotal, i ) )             // 2nd: doji
+            if ( max( inClose[i], inOpen[i] ) < max( inClose[i-1], inOpen[i-1] ) &&              // 2nd is engulfed by 1st
+                 min( inClose[i], inOpen[i] ) > min( inClose[i-1], inOpen[i-1] )
+               )
+                outInteger[outIdx++] = -TA_CANDLECOLOR(i-1) * 100;
+            else 
+                if ( max( inClose[i], inOpen[i] ) <= max( inClose[i-1], inOpen[i-1] ) &&         // 2nd is engulfed by 1st
+                     min( inClose[i], inOpen[i] ) >= min( inClose[i-1], inOpen[i-1] )            // (one end of real body can match;
+                   )                                                                             // engulfing guaranteed by "long" and "doji")
+                    outInteger[outIdx++] = -TA_CANDLECOLOR(i-1) * 80;
+                else
+                    outInteger[outIdx++] = 0;
         else
             outInteger[outIdx++] = 0;
+#endif
         /* add the current range and subtract the first range: this is done after the pattern recognition 
          * when avgPeriod is not 0, that means "compare with the previous candles" (it excludes the current candle)
          */
@@ -259,13 +276,24 @@
 /**** START GENCODE SECTION 5 - DO NOT DELETE THIS LINE ****/
 /* Generated */ 
 /* Generated */ #define  USE_SINGLE_PRECISION_INPUT
+/* Generated */ #undef  TA_LIB_PRO
 /* Generated */ #if !defined( _MANAGED ) && !defined( _JAVA )
 /* Generated */    #undef   TA_PREFIX
 /* Generated */    #define  TA_PREFIX(x) TA_S_##x
 /* Generated */ #endif
 /* Generated */ #undef   INPUT_TYPE
 /* Generated */ #define  INPUT_TYPE float
-/* Generated */ #if defined( _MANAGED )
+/* Generated */ #if defined( _MANAGED ) && defined( USE_SUBARRAY )
+/* Generated */ enum class Core::RetCode Core::CdlHaramiCross( int    startIdx,
+/* Generated */                                                int    endIdx,
+/* Generated */                                                SubArray<float>^ inOpen,
+/* Generated */                                                SubArray<float>^ inHigh,
+/* Generated */                                                SubArray<float>^ inLow,
+/* Generated */                                                SubArray<float>^ inClose,
+/* Generated */                                                [Out]int%    outBegIdx,
+/* Generated */                                                [Out]int%    outNBElement,
+/* Generated */                                                SubArray<int>^  outInteger )
+/* Generated */ #elif defined( _MANAGED )
 /* Generated */ enum class Core::RetCode Core::CdlHaramiCross( int    startIdx,
 /* Generated */                                                int    endIdx,
 /* Generated */                                                cli::array<float>^ inOpen,
@@ -337,17 +365,29 @@
 /* Generated */         i++;
 /* Generated */    }
 /* Generated */    i = startIdx;
+/* Generated */ #ifdef TA_LIB_PRO
+/* Generated */ #endif
 /* Generated */    outIdx = 0;
 /* Generated */    do
 /* Generated */    {
+/* Generated */ #ifdef TA_LIB_PRO
+/* Generated */ #else
 /* Generated */         if( TA_REALBODY(i-1) > TA_CANDLEAVERAGE( BodyLong, BodyLongPeriodTotal, i-1 ) &&         // 1st: long
-/* Generated */             TA_REALBODY(i) <= TA_CANDLEAVERAGE( BodyDoji, BodyDojiPeriodTotal, i ) &&            // 2nd: doji
-/* Generated */             max( inClose[i], inOpen[i] ) < max( inClose[i-1], inOpen[i-1] ) &&                      //      engulfed by 1st
-/* Generated */             min( inClose[i], inOpen[i] ) > min( inClose[i-1], inOpen[i-1] )
-/* Generated */           )
-/* Generated */             outInteger[outIdx++] = -TA_CANDLECOLOR(i-1) * 100;
+/* Generated */             TA_REALBODY(i) <= TA_CANDLEAVERAGE( BodyDoji, BodyDojiPeriodTotal, i ) )             // 2nd: doji
+/* Generated */             if ( max( inClose[i], inOpen[i] ) < max( inClose[i-1], inOpen[i-1] ) &&              // 2nd is engulfed by 1st
+/* Generated */                  min( inClose[i], inOpen[i] ) > min( inClose[i-1], inOpen[i-1] )
+/* Generated */                )
+/* Generated */                 outInteger[outIdx++] = -TA_CANDLECOLOR(i-1) * 100;
+/* Generated */             else 
+/* Generated */                 if ( max( inClose[i], inOpen[i] ) <= max( inClose[i-1], inOpen[i-1] ) &&         // 2nd is engulfed by 1st
+/* Generated */                      min( inClose[i], inOpen[i] ) >= min( inClose[i-1], inOpen[i-1] )            // (one end of real body can match;
+/* Generated */                    )                                                                             // engulfing guaranteed by "long" and "doji")
+/* Generated */                     outInteger[outIdx++] = -TA_CANDLECOLOR(i-1) * 80;
+/* Generated */                 else
+/* Generated */                     outInteger[outIdx++] = 0;
 /* Generated */         else
 /* Generated */             outInteger[outIdx++] = 0;
+/* Generated */ #endif
 /* Generated */         BodyLongPeriodTotal += TA_CANDLERANGE( BodyLong, i-1 ) - TA_CANDLERANGE( BodyLong, BodyLongTrailingIdx );
 /* Generated */         BodyDojiPeriodTotal += TA_CANDLERANGE( BodyDoji, i ) - TA_CANDLERANGE( BodyDoji, BodyDojiTrailingIdx );
 /* Generated */         i++; 

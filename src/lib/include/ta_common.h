@@ -1,4 +1,4 @@
-/* TA-LIB Copyright (c) 1999-2007, Mario Fortier
+/* TA-LIB Copyright (c) 1999-2008, Mario Fortier
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or
@@ -76,6 +76,7 @@ const char *TA_GetVersionString( void );
 const char *TA_GetVersionMajor ( void );
 const char *TA_GetVersionMinor ( void );
 const char *TA_GetVersionBuild ( void );
+const char *TA_GetVersionExtra ( void );
 const char *TA_GetVersionDate  ( void );
 const char *TA_GetVersionTime  ( void );
 

@@ -1,4 +1,4 @@
-/* TA-LIB Copyright (c) 1999-2007, Mario Fortier
+/* TA-LIB Copyright (c) 1999-2008, Mario Fortier
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or
@@ -43,6 +43,8 @@
  *  MMDDYY BY   Description
  *  -------------------------------------------------------------------
  *  102404 AC   Creation           
+ *  040309 AC   Increased flexibility to allow real bodies matching
+ *              on one end (Greg Morris - "Candlestick charting explained")
  *
  */
 
@@ -111,13 +113,13 @@
 /* Generated */ #if defined( _MANAGED ) && defined( USE_SUBARRAY )
 /* Generated */ enum class Core::RetCode Core::CdlEngulfing( int    startIdx,
 /* Generated */                                              int    endIdx,
-/* Generated */                                              SubArray^    inOpen,
-/* Generated */                                              SubArray^    inHigh,
-/* Generated */                                              SubArray^    inLow,
-/* Generated */                                              SubArray^    inClose,
+/* Generated */                                              SubArray<double>^ inOpen,
+/* Generated */                                              SubArray<double>^ inHigh,
+/* Generated */                                              SubArray<double>^ inLow,
+/* Generated */                                              SubArray<double>^ inClose,
 /* Generated */                                              [Out]int%    outBegIdx,
 /* Generated */                                              [Out]int%    outNBElement,
-/* Generated */                                              cli::array<int>^  outInteger )
+/* Generated */                                              SubArray<int>^  outInteger )
 /* Generated */ #elif defined( _MANAGED )
 /* Generated */ enum class Core::RetCode Core::CdlEngulfing( int    startIdx,
 /* Generated */                                              int    endIdx,
@@ -207,27 +209,40 @@
     * Must have:
     * - first: black (white) real body
     * - second: white (black) real body that engulfs the prior real body
-    * outInteger is positive (1 to 100) when bullish or negative (-1 to -100) when bearish;
-    * the user should consider that an engulfing must appear in a downtrend if bullish or in an uptrend if bearish,
+    * outInteger is positive (1 to 100) when bullish or negative (-1 to -100) when bearish:
+    * - 100 is returned when the second candle's real body begins before and ends after the first candle's real body
+    * - 80 is returned when the two real bodies match on one end (Greg Morris contemplate this case in his book
+    *   "Candlestick charting explained")
+    * The user should consider that an engulfing must appear in a downtrend if bullish or in an uptrend if bearish,
     * while this function does not consider it
     */
    outIdx = 0;
+#ifdef TA_LIB_PRO
+      /* Section for code distributed with TA-Lib Pro only. */
+#else
    do
    {
         if( ( TA_CANDLECOLOR(i) == 1 && TA_CANDLECOLOR(i-1) == -1 &&            // white engulfs black
-              inClose[i] > inOpen[i-1] && inOpen[i] < inClose[i-1]
+              ( ( inClose[i] >= inOpen[i-1] && inOpen[i] < inClose[i-1] ) ||
+                ( inClose[i] > inOpen[i-1] && inOpen[i] <= inClose[i-1] )
+              )
             )
             ||
             ( TA_CANDLECOLOR(i) == -1 && TA_CANDLECOLOR(i-1) == 1 &&            // black engulfs white
-              inOpen[i] > inClose[i-1] && inClose[i] < inOpen[i-1]
+              ( ( inOpen[i] >= inClose[i-1] && inClose[i] < inOpen[i-1] ) ||
+                ( inOpen[i] > inClose[i-1] && inClose[i] <= inOpen[i-1] )
+              )
             )
           )
-            outInteger[outIdx++] = TA_CANDLECOLOR(i) * 100;
+            if( inOpen[i] != inClose[i-1] && inClose[i] != inOpen[i-1] )
+                outInteger[outIdx++] = TA_CANDLECOLOR(i) * 100;
+            else
+                outInteger[outIdx++] = TA_CANDLECOLOR(i) * 80;
         else
-            outInteger[outIdx++] = 0;
+            outInteger[outIdx++] = 0; 
         i++; 
    } while( i <= endIdx );
-
+#endif
    /* All done. Indicate the output limits and return. */
    VALUE_HANDLE_DEREF(outNBElement) = outIdx;
    VALUE_HANDLE_DEREF(outBegIdx)    = startIdx;
@@ -238,13 +253,24 @@
 /**** START GENCODE SECTION 5 - DO NOT DELETE THIS LINE ****/
 /* Generated */ 
 /* Generated */ #define  USE_SINGLE_PRECISION_INPUT
+/* Generated */ #undef  TA_LIB_PRO
 /* Generated */ #if !defined( _MANAGED ) && !defined( _JAVA )
 /* Generated */    #undef   TA_PREFIX
 /* Generated */    #define  TA_PREFIX(x) TA_S_##x
 /* Generated */ #endif
 /* Generated */ #undef   INPUT_TYPE
 /* Generated */ #define  INPUT_TYPE float
-/* Generated */ #if defined( _MANAGED )
+/* Generated */ #if defined( _MANAGED ) && defined( USE_SUBARRAY )
+/* Generated */ enum class Core::RetCode Core::CdlEngulfing( int    startIdx,
+/* Generated */                                              int    endIdx,
+/* Generated */                                              SubArray<float>^ inOpen,
+/* Generated */                                              SubArray<float>^ inHigh,
+/* Generated */                                              SubArray<float>^ inLow,
+/* Generated */                                              SubArray<float>^ inClose,
+/* Generated */                                              [Out]int%    outBegIdx,
+/* Generated */                                              [Out]int%    outNBElement,
+/* Generated */                                              SubArray<int>^  outInteger )
+/* Generated */ #elif defined( _MANAGED )
 /* Generated */ enum class Core::RetCode Core::CdlEngulfing( int    startIdx,
 /* Generated */                                              int    endIdx,
 /* Generated */                                              cli::array<float>^ inOpen,
@@ -302,21 +328,31 @@
 /* Generated */    }
 /* Generated */    i = startIdx;
 /* Generated */    outIdx = 0;
+/* Generated */ #ifdef TA_LIB_PRO
+/* Generated */ #else
 /* Generated */    do
 /* Generated */    {
 /* Generated */         if( ( TA_CANDLECOLOR(i) == 1 && TA_CANDLECOLOR(i-1) == -1 &&            // white engulfs black
-/* Generated */               inClose[i] > inOpen[i-1] && inOpen[i] < inClose[i-1]
+/* Generated */               ( ( inClose[i] >= inOpen[i-1] && inOpen[i] < inClose[i-1] ) ||
+/* Generated */                 ( inClose[i] > inOpen[i-1] && inOpen[i] <= inClose[i-1] )
+/* Generated */               )
 /* Generated */             )
 /* Generated */             ||
 /* Generated */             ( TA_CANDLECOLOR(i) == -1 && TA_CANDLECOLOR(i-1) == 1 &&            // black engulfs white
-/* Generated */               inOpen[i] > inClose[i-1] && inClose[i] < inOpen[i-1]
+/* Generated */               ( ( inOpen[i] >= inClose[i-1] && inClose[i] < inOpen[i-1] ) ||
+/* Generated */                 ( inOpen[i] > inClose[i-1] && inClose[i] <= inOpen[i-1] )
+/* Generated */               )
 /* Generated */             )
 /* Generated */           )
-/* Generated */             outInteger[outIdx++] = TA_CANDLECOLOR(i) * 100;
+/* Generated */             if( inOpen[i] != inClose[i-1] && inClose[i] != inOpen[i-1] )
+/* Generated */                 outInteger[outIdx++] = TA_CANDLECOLOR(i) * 100;
+/* Generated */             else
+/* Generated */                 outInteger[outIdx++] = TA_CANDLECOLOR(i) * 80;
 /* Generated */         else
-/* Generated */             outInteger[outIdx++] = 0;
+/* Generated */             outInteger[outIdx++] = 0; 
 /* Generated */         i++; 
 /* Generated */    } while( i <= endIdx );
+/* Generated */ #endif
 /* Generated */    VALUE_HANDLE_DEREF(outNBElement) = outIdx;
 /* Generated */    VALUE_HANDLE_DEREF(outBegIdx)    = startIdx;
 /* Generated */    return ENUM_VALUE(RetCode,TA_SUCCESS,Success);

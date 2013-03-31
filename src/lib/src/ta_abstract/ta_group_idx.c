@@ -48,6 +48,7 @@
 #include "ta_def_ui.h"
 #include "ta_abstract.h"
 
+extern const TA_FuncDef TA_DEF_ACCBANDS;
 extern const TA_FuncDef TA_DEF_ACOS;
 extern const TA_FuncDef TA_DEF_AD;
 extern const TA_FuncDef TA_DEF_ADD;
@@ -61,6 +62,7 @@ extern const TA_FuncDef TA_DEF_ASIN;
 extern const TA_FuncDef TA_DEF_ATAN;
 extern const TA_FuncDef TA_DEF_ATR;
 extern const TA_FuncDef TA_DEF_AVGPRICE;
+extern const TA_FuncDef TA_DEF_AVGDEV;
 extern const TA_FuncDef TA_DEF_BBANDS;
 extern const TA_FuncDef TA_DEF_BETA;
 extern const TA_FuncDef TA_DEF_BOP;
@@ -143,6 +145,7 @@ extern const TA_FuncDef TA_DEF_HT_PHASOR;
 extern const TA_FuncDef TA_DEF_HT_SINE;
 extern const TA_FuncDef TA_DEF_HT_TRENDLINE;
 extern const TA_FuncDef TA_DEF_HT_TRENDMODE;
+extern const TA_FuncDef TA_DEF_IMI;
 extern const TA_FuncDef TA_DEF_KAMA;
 extern const TA_FuncDef TA_DEF_LINEARREG;
 extern const TA_FuncDef TA_DEF_LINEARREG_ANGLE;
@@ -242,6 +245,7 @@ NULL };
 #define SIZE_GROUP_1 ((sizeof(TA_PerGroupFunc_1)/sizeof(const TA_FuncDef *))-1)
 
 const TA_FuncDef *TA_PerGroupFunc_2[] = {
+&TA_DEF_ACCBANDS,
 &TA_DEF_BBANDS,
 &TA_DEF_DEMA,
 &TA_DEF_EMA,
@@ -279,6 +283,7 @@ const TA_FuncDef *TA_PerGroupFunc_4[] = {
 &TA_DEF_CCI,
 &TA_DEF_CMO,
 &TA_DEF_DX,
+&TA_DEF_IMI,
 &TA_DEF_MACD,
 &TA_DEF_MACDEXT,
 &TA_DEF_MACDFIX,
@@ -399,6 +404,7 @@ NULL };
 
 const TA_FuncDef *TA_PerGroupFunc_9[] = {
 &TA_DEF_AVGPRICE,
+&TA_DEF_AVGDEV,
 &TA_DEF_MEDPRICE,
 &TA_DEF_TYPPRICE,
 &TA_DEF_WCLPRICE,

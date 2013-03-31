@@ -1,4 +1,4 @@
-/* TA-LIB Copyright (c) 1999-2007, Mario Fortier
+/* TA-LIB Copyright (c) 1999-2008, Mario Fortier
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or
@@ -113,13 +113,13 @@
 /* Generated */ #if defined( _MANAGED ) && defined( USE_SUBARRAY )
 /* Generated */ enum class Core::RetCode Core::CdlRickshawMan( int    startIdx,
 /* Generated */                                                int    endIdx,
-/* Generated */                                                SubArray^    inOpen,
-/* Generated */                                                SubArray^    inHigh,
-/* Generated */                                                SubArray^    inLow,
-/* Generated */                                                SubArray^    inClose,
+/* Generated */                                                SubArray<double>^ inOpen,
+/* Generated */                                                SubArray<double>^ inHigh,
+/* Generated */                                                SubArray<double>^ inLow,
+/* Generated */                                                SubArray<double>^ inClose,
 /* Generated */                                                [Out]int%    outBegIdx,
 /* Generated */                                                [Out]int%    outNBElement,
-/* Generated */                                                cli::array<int>^  outInteger )
+/* Generated */                                                SubArray<int>^  outInteger )
 /* Generated */ #elif defined( _MANAGED )
 /* Generated */ enum class Core::RetCode Core::CdlRickshawMan( int    startIdx,
 /* Generated */                                                int    endIdx,
@@ -156,6 +156,10 @@
    /* Insert local variables here. */
     double BodyDojiPeriodTotal, ShadowLongPeriodTotal, NearPeriodTotal;
     int i, outIdx, BodyDojiTrailingIdx, ShadowLongTrailingIdx, NearTrailingIdx, lookbackTotal;
+
+#ifdef TA_LIB_PRO
+      /* Section for code distributed with TA-Lib Pro only. */
+#endif
 
 /**** START GENCODE SECTION 4 - DO NOT DELETE THIS LINE ****/
 /* Generated */ 
@@ -239,6 +243,9 @@
    outIdx = 0;
    do
    {
+#ifdef TA_LIB_PRO
+      /* Section for code distributed with TA-Lib Pro only. */
+#else
         if( TA_REALBODY(i) <= TA_CANDLEAVERAGE( BodyDoji, BodyDojiPeriodTotal, i ) &&            // doji
             TA_LOWERSHADOW(i) > TA_CANDLEAVERAGE( ShadowLong, ShadowLongPeriodTotal, i ) &&      // long shadow
             TA_UPPERSHADOW(i) > TA_CANDLEAVERAGE( ShadowLong, ShadowLongPeriodTotal, i ) &&      // long shadow
@@ -253,12 +260,15 @@
             outInteger[outIdx++] = 100;
         else
             outInteger[outIdx++] = 0;
+
         /* add the current range and subtract the first range: this is done after the pattern recognition 
          * when avgPeriod is not 0, that means "compare with the previous candles" (it excludes the current candle)
          */
         BodyDojiPeriodTotal += TA_CANDLERANGE( BodyDoji, i ) - TA_CANDLERANGE( BodyDoji, BodyDojiTrailingIdx );
         ShadowLongPeriodTotal += TA_CANDLERANGE( ShadowLong, i ) - TA_CANDLERANGE( ShadowLong, ShadowLongTrailingIdx );
         NearPeriodTotal += TA_CANDLERANGE( Near, i ) - TA_CANDLERANGE( Near, NearTrailingIdx );
+#endif
+
         i++; 
         BodyDojiTrailingIdx++;
         ShadowLongTrailingIdx++;
@@ -275,13 +285,24 @@
 /**** START GENCODE SECTION 5 - DO NOT DELETE THIS LINE ****/
 /* Generated */ 
 /* Generated */ #define  USE_SINGLE_PRECISION_INPUT
+/* Generated */ #undef  TA_LIB_PRO
 /* Generated */ #if !defined( _MANAGED ) && !defined( _JAVA )
 /* Generated */    #undef   TA_PREFIX
 /* Generated */    #define  TA_PREFIX(x) TA_S_##x
 /* Generated */ #endif
 /* Generated */ #undef   INPUT_TYPE
 /* Generated */ #define  INPUT_TYPE float
-/* Generated */ #if defined( _MANAGED )
+/* Generated */ #if defined( _MANAGED ) && defined( USE_SUBARRAY )
+/* Generated */ enum class Core::RetCode Core::CdlRickshawMan( int    startIdx,
+/* Generated */                                                int    endIdx,
+/* Generated */                                                SubArray<float>^ inOpen,
+/* Generated */                                                SubArray<float>^ inHigh,
+/* Generated */                                                SubArray<float>^ inLow,
+/* Generated */                                                SubArray<float>^ inClose,
+/* Generated */                                                [Out]int%    outBegIdx,
+/* Generated */                                                [Out]int%    outNBElement,
+/* Generated */                                                SubArray<int>^  outInteger )
+/* Generated */ #elif defined( _MANAGED )
 /* Generated */ enum class Core::RetCode Core::CdlRickshawMan( int    startIdx,
 /* Generated */                                                int    endIdx,
 /* Generated */                                                cli::array<float>^ inOpen,
@@ -315,6 +336,8 @@
 /* Generated */ {
 /* Generated */     double BodyDojiPeriodTotal, ShadowLongPeriodTotal, NearPeriodTotal;
 /* Generated */     int i, outIdx, BodyDojiTrailingIdx, ShadowLongTrailingIdx, NearTrailingIdx, lookbackTotal;
+/* Generated */ #ifdef TA_LIB_PRO
+/* Generated */ #endif
 /* Generated */  #ifndef TA_FUNC_NO_RANGE_CHECK
 /* Generated */     if( startIdx < 0 )
 /* Generated */        return ENUM_VALUE(RetCode,TA_OUT_OF_RANGE_START_INDEX,OutOfRangeStartIndex);
@@ -362,6 +385,8 @@
 /* Generated */    outIdx = 0;
 /* Generated */    do
 /* Generated */    {
+/* Generated */ #ifdef TA_LIB_PRO
+/* Generated */ #else
 /* Generated */         if( TA_REALBODY(i) <= TA_CANDLEAVERAGE( BodyDoji, BodyDojiPeriodTotal, i ) &&            // doji
 /* Generated */             TA_LOWERSHADOW(i) > TA_CANDLEAVERAGE( ShadowLong, ShadowLongPeriodTotal, i ) &&      // long shadow
 /* Generated */             TA_UPPERSHADOW(i) > TA_CANDLEAVERAGE( ShadowLong, ShadowLongPeriodTotal, i ) &&      // long shadow
@@ -379,6 +404,7 @@
 /* Generated */         BodyDojiPeriodTotal += TA_CANDLERANGE( BodyDoji, i ) - TA_CANDLERANGE( BodyDoji, BodyDojiTrailingIdx );
 /* Generated */         ShadowLongPeriodTotal += TA_CANDLERANGE( ShadowLong, i ) - TA_CANDLERANGE( ShadowLong, ShadowLongTrailingIdx );
 /* Generated */         NearPeriodTotal += TA_CANDLERANGE( Near, i ) - TA_CANDLERANGE( Near, NearTrailingIdx );
+/* Generated */ #endif
 /* Generated */         i++; 
 /* Generated */         BodyDojiTrailingIdx++;
 /* Generated */         ShadowLongTrailingIdx++;

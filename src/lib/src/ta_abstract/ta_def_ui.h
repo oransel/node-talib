@@ -1,4 +1,4 @@
-/* TA-LIB Copyright (c) 1999-2007, Mario Fortier
+/* TA-LIB Copyright (c) 1999-2008, Mario Fortier
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or
@@ -91,6 +91,7 @@ extern const TA_InputParameterInfo TA_DEF_UI_Input_Price_HLCV;
 extern const TA_InputParameterInfo TA_DEF_UI_Input_Price_OHLC;
 extern const TA_InputParameterInfo TA_DEF_UI_Input_Price_HLC;
 extern const TA_InputParameterInfo TA_DEF_UI_Input_Price_HL;
+extern const TA_InputParameterInfo TA_DEF_UI_Input_Price_OC;
 extern const TA_InputParameterInfo TA_DEF_UI_Input_Price_CV;
 extern const TA_InputParameterInfo TA_DEF_UI_Input_Price_V;
 extern const TA_InputParameterInfo TA_DEF_UI_Input_Periods;
@@ -108,6 +109,7 @@ extern const TA_OptInputParameterInfo TA_DEF_UI_TimePeriod_10;
 extern const TA_OptInputParameterInfo TA_DEF_UI_TimePeriod_5;
 
 extern const TA_OptInputParameterInfo TA_DEF_UI_TimePeriod_30_MINIMUM2;
+extern const TA_OptInputParameterInfo TA_DEF_UI_TimePeriod_20_MINIMUM2;
 extern const TA_OptInputParameterInfo TA_DEF_UI_TimePeriod_21_MINIMUM2;
 extern const TA_OptInputParameterInfo TA_DEF_UI_TimePeriod_14_MINIMUM2;
 extern const TA_OptInputParameterInfo TA_DEF_UI_TimePeriod_14_MINIMUM5;

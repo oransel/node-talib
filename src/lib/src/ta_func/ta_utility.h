@@ -254,9 +254,10 @@ void TA_S_INT_stddev_using_precalc_ma( const float  *inReal,
  * must be carefully choosen to work in the domain of the tested values.  
  * Do a search on Google for a more generalize algo.
  */
+#define TA_EPSILON (0.00000000000001)
 #define TA_REAL_EQ(x,v,ep)   (((v-ep)<x)&&(x<(v+ep)))
-#define TA_IS_ZERO(v)        (((-0.00000001)<v)&&(v<0.00000001))
-#define TA_IS_ZERO_OR_NEG(v) (v<0.00000001)
+#define TA_IS_ZERO(v)        (((-TA_EPSILON)<v)&&(v<TA_EPSILON))
+#define TA_IS_ZERO_OR_NEG(v) (v<TA_EPSILON)
 
 /* The following macros are being used to do
  * the Hilbert Transform logic as documented
@@ -328,6 +329,9 @@ void TA_S_INT_stddev_using_precalc_ma( const float  *inReal,
 #define TA_LOWERSHADOW(IDX)     ( ( inClose[IDX] >= inOpen[IDX] ? inOpen[IDX] : inClose[IDX] ) - inLow[IDX] )
 #define TA_HIGHLOWRANGE(IDX)    ( inHigh[IDX] - inLow[IDX] )
 #define TA_CANDLECOLOR(IDX)     ( inClose[IDX] >= inOpen[IDX] ? 1 : -1 )
+#ifdef TA_LIB_PRO
+/* Section for code distributed with TA-Lib Pro only. */
+#endif
 
 #if defined( _MANAGED )
    #define TA_CANDLERANGETYPE(SET) (Globals->candleSettings[(int)CandleSettingType::SET]->rangeType)

@@ -1,4 +1,4 @@
-/* TA-LIB Copyright (c) 1999-2007, Mario Fortier
+/* TA-LIB Copyright (c) 1999-2008, Mario Fortier
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or
@@ -127,14 +127,14 @@
 /* Generated */ #if defined( _MANAGED ) && defined( USE_SUBARRAY )
 /* Generated */ enum class Core::RetCode Core::CdlAbandonedBaby( int    startIdx,
 /* Generated */                                                  int    endIdx,
-/* Generated */                                                  SubArray^    inOpen,
-/* Generated */                                                  SubArray^    inHigh,
-/* Generated */                                                  SubArray^    inLow,
-/* Generated */                                                  SubArray^    inClose,
+/* Generated */                                                  SubArray<double>^ inOpen,
+/* Generated */                                                  SubArray<double>^ inHigh,
+/* Generated */                                                  SubArray<double>^ inLow,
+/* Generated */                                                  SubArray<double>^ inClose,
 /* Generated */                                                  double        optInPenetration, /* From 0 to TA_REAL_MAX */
 /* Generated */                                                  [Out]int%    outBegIdx,
 /* Generated */                                                  [Out]int%    outNBElement,
-/* Generated */                                                  cli::array<int>^  outInteger )
+/* Generated */                                                  SubArray<int>^  outInteger )
 /* Generated */ #elif defined( _MANAGED )
 /* Generated */ enum class Core::RetCode Core::CdlAbandonedBaby( int    startIdx,
 /* Generated */                                                  int    endIdx,
@@ -269,6 +269,9 @@
    outIdx = 0;
    do
    {
+#ifdef TA_LIB_PRO
+      /* Section for code distributed with TA-Lib Pro only. */
+#else
         if( TA_REALBODY(i-2) > TA_CANDLEAVERAGE( BodyLong, BodyLongPeriodTotal, i-2 ) &&         // 1st: long
             TA_REALBODY(i-1) <= TA_CANDLEAVERAGE( BodyDoji, BodyDojiPeriodTotal, i-1 ) &&        // 2nd: doji
             TA_REALBODY(i) > TA_CANDLEAVERAGE( BodyShort, BodyShortPeriodTotal, i ) &&           // 3rd: longer than short
@@ -288,9 +291,14 @@
               )
             )
           )
+		{
             outInteger[outIdx++] = TA_CANDLECOLOR(i) * 100;
+		}
         else
+		{
             outInteger[outIdx++] = 0;
+		}
+#endif
         /* add the current range and subtract the first range: this is done after the pattern recognition 
          * when avgPeriod is not 0, that means "compare with the previous candles" (it excludes the current candle)
          */
@@ -313,13 +321,25 @@
 /**** START GENCODE SECTION 5 - DO NOT DELETE THIS LINE ****/
 /* Generated */ 
 /* Generated */ #define  USE_SINGLE_PRECISION_INPUT
+/* Generated */ #undef  TA_LIB_PRO
 /* Generated */ #if !defined( _MANAGED ) && !defined( _JAVA )
 /* Generated */    #undef   TA_PREFIX
 /* Generated */    #define  TA_PREFIX(x) TA_S_##x
 /* Generated */ #endif
 /* Generated */ #undef   INPUT_TYPE
 /* Generated */ #define  INPUT_TYPE float
-/* Generated */ #if defined( _MANAGED )
+/* Generated */ #if defined( _MANAGED ) && defined( USE_SUBARRAY )
+/* Generated */ enum class Core::RetCode Core::CdlAbandonedBaby( int    startIdx,
+/* Generated */                                                  int    endIdx,
+/* Generated */                                                  SubArray<float>^ inOpen,
+/* Generated */                                                  SubArray<float>^ inHigh,
+/* Generated */                                                  SubArray<float>^ inLow,
+/* Generated */                                                  SubArray<float>^ inClose,
+/* Generated */                                                  double        optInPenetration, /* From 0 to TA_REAL_MAX */
+/* Generated */                                                  [Out]int%    outBegIdx,
+/* Generated */                                                  [Out]int%    outNBElement,
+/* Generated */                                                  SubArray<int>^  outInteger )
+/* Generated */ #elif defined( _MANAGED )
 /* Generated */ enum class Core::RetCode Core::CdlAbandonedBaby( int    startIdx,
 /* Generated */                                                  int    endIdx,
 /* Generated */                                                  cli::array<float>^ inOpen,
@@ -408,6 +428,8 @@
 /* Generated */    outIdx = 0;
 /* Generated */    do
 /* Generated */    {
+/* Generated */ #ifdef TA_LIB_PRO
+/* Generated */ #else
 /* Generated */         if( TA_REALBODY(i-2) > TA_CANDLEAVERAGE( BodyLong, BodyLongPeriodTotal, i-2 ) &&         // 1st: long
 /* Generated */             TA_REALBODY(i-1) <= TA_CANDLEAVERAGE( BodyDoji, BodyDojiPeriodTotal, i-1 ) &&        // 2nd: doji
 /* Generated */             TA_REALBODY(i) > TA_CANDLEAVERAGE( BodyShort, BodyShortPeriodTotal, i ) &&           // 3rd: longer than short
@@ -427,9 +449,14 @@
 /* Generated */               )
 /* Generated */             )
 /* Generated */           )
+/* Generated */ 		{
 /* Generated */             outInteger[outIdx++] = TA_CANDLECOLOR(i) * 100;
+/* Generated */ 		}
 /* Generated */         else
+/* Generated */ 		{
 /* Generated */             outInteger[outIdx++] = 0;
+/* Generated */ 		}
+/* Generated */ #endif
 /* Generated */         BodyLongPeriodTotal += TA_CANDLERANGE( BodyLong, i-2 ) - TA_CANDLERANGE( BodyLong, BodyLongTrailingIdx );
 /* Generated */         BodyDojiPeriodTotal += TA_CANDLERANGE( BodyDoji, i-1 ) - TA_CANDLERANGE( BodyDoji, BodyDojiTrailingIdx );
 /* Generated */         BodyShortPeriodTotal += TA_CANDLERANGE( BodyShort, i ) - TA_CANDLERANGE( BodyShort, BodyShortTrailingIdx );
