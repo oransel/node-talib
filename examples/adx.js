@@ -25,4 +25,3 @@ talib.execute({
     console.log(result);
 
 });
-

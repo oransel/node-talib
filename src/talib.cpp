@@ -5,7 +5,7 @@
  |   ||   ||   ||---'---|    ,---||    ||   |
  `   '`---'`---'`---'   `---'`---^`---'``---'
  
- NODE-TALIB Copyright (c) 2012, Mustafa Oransel
+ NODE-TALIB Copyright (c) 2012-2013, Mustafa Oransel
  All rights reserved.
  
  This library is free software; you can redistribute it and/or
@@ -74,7 +74,7 @@ class Talib : ObjectWrap {
         persistent_function_template->SetClassName(String::NewSymbol("TALib"));
         
         // Define fields
-        target->Set(String::New("version"), String::New("0.2.5"));
+        target->Set(String::New("version"), String::New("0.2.9"));
        
         // Define accessors
         target->SetAccessor(String::New("functions"), GetFunctions, NULL);
@@ -687,9 +687,9 @@ class Talib : ObjectWrap {
         
         uv_work_t *req = new uv_work_t;
         req->data = wo;
+
         // Queue the work
         uv_queue_work(uv_default_loop(), req, ExecuteWork, ExecuteWorkDone);
-        uv_ref((uv_handle_t *) &req);
         
         return Undefined();
         
@@ -710,7 +710,7 @@ class Talib : ObjectWrap {
         HandleScope scope;
         
         work_object *wo = static_cast<work_object *>(req->data);
-        uv_unref((uv_handle_t*) &req); 
+
         // Create the outputs object
         Local<Object> outputArray = Object::New();
         

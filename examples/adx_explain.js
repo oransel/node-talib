@@ -7,5 +7,3 @@ console.log("TALib Version: " + talib.version);
 
 // Display ADX indicator function specifications
 console.log(talib.explain("ADX"));
-
-
