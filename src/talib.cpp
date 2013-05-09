@@ -301,6 +301,8 @@ class Talib : ObjectWrap {
         double *volume          = NULL;
         double *openInterest    = NULL;
         
+        double *inRealList		= NULL;
+        
         // Numeric values
         double inReal;
         int inInteger;
@@ -526,10 +528,10 @@ class Talib : ObjectWrap {
                     }
                     
                     // Get the number parameter value
-                    inReal = executeParameter->Get(String::New(input_paraminfo->paramName))->NumberValue();
-                    
+                    inRealList = V8toDoubleArray(Local<Array>::Cast(executeParameter->Get(String::New("inReal"))));
+                     
                     // Save the number parameter
-                    if ((retCode = TA_SetInputParamRealPtr(func_params, i, &inReal)) != TA_SUCCESS) {
+                    if ((retCode = TA_SetInputParamRealPtr(func_params, i, inRealList)) != TA_SUCCESS) {
                         
                         // Clear parameter holder memory
                         TA_ParamHolderFree(func_params);
@@ -721,7 +723,7 @@ class Talib : ObjectWrap {
         Local<Value> argv[1];
         
         // Determine the number of results
-        int resultLength = wo->outBegIdx + wo->outNBElement;
+        int resultLength = wo->outNBElement;
         
         // Function output parameter information
         const TA_OutputParameterInfo *output_paraminfo;

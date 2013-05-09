@@ -1,3 +1,9 @@
+0.2.11 2013-05-08:
+	Trailing zeros moved from end of output array	
+
+0.2.10 2013-05-08:
+	Fixed inReal parameter passing
+
 0.2.5 2012-02-29:
 	Fixes OS X builds
 
