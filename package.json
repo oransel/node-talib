@@ -1,8 +1,9 @@
 {
   "author": "Mustafa Oransel",
+  "contributors": ["Alfred Omega"],
   "name": "talib",
   "description": "Technical Analysis Library",
-  "version": "0.2.9",
+  "version": "0.2.10",
   "homepage":"https://github.com/oransel/node-talib",
   "repository": {
     "type":"git",
