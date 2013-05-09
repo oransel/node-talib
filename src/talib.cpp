@@ -723,7 +723,7 @@ class Talib : ObjectWrap {
         Local<Value> argv[1];
         
         // Determine the number of results
-        int resultLength = wo->outBegIdx + wo->outNBElement;
+        int resultLength = wo->outNBElement;
         
         // Function output parameter information
         const TA_OutputParameterInfo *output_paraminfo;

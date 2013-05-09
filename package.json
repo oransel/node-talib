@@ -3,7 +3,7 @@
   "contributors": ["Alfred Omega"],
   "name": "talib",
   "description": "Technical Analysis Library",
-  "version": "0.2.10",
+  "version": "0.2.11",
   "homepage":"https://github.com/oransel/node-talib",
   "repository": {
     "type":"git",
