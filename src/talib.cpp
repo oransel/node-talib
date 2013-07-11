@@ -29,6 +29,7 @@
 #include <node.h>
 
 #include <unistd.h>
+#include <string>
 
 #include "./lib/include/ta_abstract.h"
 #include "./lib/include/ta_common.h"
@@ -74,7 +75,7 @@ class Talib : ObjectWrap {
         persistent_function_template->SetClassName(String::NewSymbol("TALib"));
         
         // Define fields
-        target->Set(String::New("version"), String::New("0.2.9"));
+        target->Set(String::New("version"), String::New("0.2.12"));
        
         // Define accessors
         target->SetAccessor(String::New("functions"), GetFunctions, NULL);
@@ -127,7 +128,7 @@ class Talib : ObjectWrap {
         
     }
     
-    static Handle<Value> Create_Internal_Error(Local<Function> cb, const char *error, ...) {
+    static Handle<Value> Create_Internal_Error(Local<Function> cb, const char *error) {
         
         Local<Value> argv[1];
         Local<Object> result = Object::New();
@@ -523,7 +524,7 @@ class Talib : ObjectWrap {
                         TA_ParamHolderFree(func_params);
                         
                         // Return internal error
-                        return Create_Internal_Error(cb, "First argument must contain '%s' field", input_paraminfo->paramName);
+                        return Create_Internal_Error(cb, ((std::string)("First argument must contain '") + (std::string)(input_paraminfo->paramName) + (std::string)("' field")).c_str());
                         
                     }
                     
@@ -553,7 +554,7 @@ class Talib : ObjectWrap {
                         TA_ParamHolderFree(func_params);
                         
                         // Return internal error
-                        return Create_Internal_Error(cb, "First argument must contain '%s' field", input_paraminfo->paramName);
+                        return Create_Internal_Error(cb, ((std::string)("First argument must contain '") + (std::string)(input_paraminfo->paramName) + (std::string)("' field")).c_str());
                         
                     }
                     
@@ -589,7 +590,7 @@ class Talib : ObjectWrap {
                 TA_ParamHolderFree(func_params);
                 
                 // Return internal error
-                return Create_Internal_Error(cb, "First argument must contain '%s' field", opt_paraminfo->paramName);
+                return Create_Internal_Error(cb, ((std::string)("First argument must contain '") + (std::string)(opt_paraminfo->paramName) + (std::string)("' field")).c_str());
                 
             }
             
