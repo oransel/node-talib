@@ -414,6 +414,10 @@ class Talib : ObjectWrap {
                             
                             // Clear parameter holder memory
                             TA_ParamHolderFree(func_params);
+
+                            // Clear values memory
+                            if (open)
+                                delete[] open;
                             
                             // Return internal error
                             return Create_Internal_Error(cb, "First argument must contain 'high' field");
@@ -434,6 +438,12 @@ class Talib : ObjectWrap {
                             // Clear parameter holder memory
                             TA_ParamHolderFree(func_params);
                             
+                            // Clear values memory
+                            if (open)
+                                delete[] open;
+                            if (high)
+                                delete[] high;
+                            
                             // Return internal error
                             return Create_Internal_Error(cb, "First argument must contain 'low' field");
                             
@@ -453,6 +463,14 @@ class Talib : ObjectWrap {
                             // Clear parameter holder memory
                             TA_ParamHolderFree(func_params);
                             
+                            // Clear values memory
+                            if (open)
+                                delete[] open;
+                            if (low)
+                                delete[] low;
+                            if (high)
+                                delete[] high;
+                            
                             // Return internal error
                             return Create_Internal_Error(cb, "First argument must contain 'close' field");
                             
@@ -471,6 +489,16 @@ class Talib : ObjectWrap {
                             
                             // Clear parameter holder memory
                             TA_ParamHolderFree(func_params);
+
+                            // Clear values memory
+                            if (open)
+                                delete[] open;
+                            if (close)
+                                delete[] close;
+                            if (low)
+                                delete[] low;
+                            if (high)
+                                delete[] high;
                             
                             // Return internal error
                             return Create_Internal_Error(cb, "First argument must contain 'volume' field");
@@ -490,6 +518,16 @@ class Talib : ObjectWrap {
                             
                             // Clear parameter holder memory
                             TA_ParamHolderFree(func_params);
+                            
+                            // Clear values memory
+                            if (close)
+                                delete[] close;
+                            if (volume)
+                                delete[] volume;
+                            if (high)
+                                delete[] high;
+                            if (low)
+                                delete[] low;
                             
                             // Return internal error
                             return Create_Internal_Error(cb, "First argument must contain 'openInterest' field");
