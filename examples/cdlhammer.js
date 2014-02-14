@@ -6,7 +6,7 @@ console.log();
 console.log("TALib Version: " + talib.version);
 
 // Load market data
-var marketContents = fs.readFileSync('examples/test.json','utf8'); 
+var marketContents = fs.readFileSync('examples/marketdata.json','utf8'); 
 var marketData = JSON.parse(marketContents);
 
 // execute CDLHAMMER indicator function
