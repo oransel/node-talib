@@ -44,10 +44,10 @@ class Talib : ObjectWrap {
   private:
     
   public:
-    
+
     Talib() {}
     ~Talib() {}
-    
+
     // Async work object
     struct work_object {
         Persistent<Function> cb;
@@ -64,7 +64,7 @@ class Talib : ObjectWrap {
     };
 
     static Persistent<FunctionTemplate> persistent_function_template;
-    
+
     static void Init(Handle<Object> target) { 
         
         // Define function template
@@ -75,15 +75,18 @@ class Talib : ObjectWrap {
         persistent_function_template->SetClassName(String::NewSymbol("TALib"));
         
         // Define fields
-        target->Set(String::New("version"), String::New("0.2.12"));
+        target->Set(String::New("version"), String::New("0.3.0"));
        
         // Define accessors
         target->SetAccessor(String::New("functions"), GetFunctions, NULL);
+
+        // Initialize the engine
+        TA_Initialize();
         
         // Define functions
         NODE_SET_METHOD(target, "explain", Explain);
         NODE_SET_METHOD(target, "execute", Execute);
-        
+
     }
     
     static Handle<Value> New(const Arguments& args) {
