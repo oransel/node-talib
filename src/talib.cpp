@@ -5,7 +5,7 @@
  |   ||   ||   ||---'---|    ,---||    ||   |
  `   '`---'`---'`---'   `---'`---^`---'``---'
  
- NODE-TALIB Copyright (c) 2012-2013, Mustafa Oransel
+ NODE-TALIB Copyright (c) 2012-2014, Mustafa Oransel
  All rights reserved.
  
  This library is free software; you can redistribute it and/or
@@ -144,12 +144,17 @@ class Talib : ObjectWrap {
     
     static Handle<Value> TA_FunctionExplanation(const char *func_name) {
         
+        // Function flag counter
+        int func_param_flag_count;
+
         // Function handle and information
         const TA_FuncHandle *func_handle;
         const TA_FuncInfo   *func_info;
         
         // Function object
         Local<Object> func_object;
+        Local<Object> func_param_object;
+        Local<Object> func_param_flags;
         
         // Execution parameters
         Local<Array> inParams;
@@ -188,8 +193,39 @@ class Talib : ObjectWrap {
             // Get the function input parameter information
             TA_GetInputParameterInfo(func_info->handle, i, &input_paraminfo);
             
+            // Create the function parameter information
+            func_param_object = Object::New();
+            func_param_object->Set(String::New("name"), String::New(input_paraminfo->paramName));
+
+            // Add the function parameter type
+            switch(input_paraminfo->type) {
+                case TA_Input_Price: func_param_object->Set(String::New("type"), String::New("price")); break;
+                case TA_Input_Real: func_param_object->Set(String::New("type"), String::New("real")); break;
+                case TA_Input_Integer: func_param_object->Set(String::New("type"), String::New("integer")); break;
+            }
+
+            // Add the function parameter flags
+            if (input_paraminfo->flags > 0) {
+
+                // Create a new function flags array
+                func_param_flags = Array::New();
+                func_param_flag_count = 0;
+
+                // Set the function flag defitions
+                if (input_paraminfo->flags & TA_IN_PRICE_OPEN) func_param_flags->Set(func_param_flag_count++, String::New("open"));
+                if (input_paraminfo->flags & TA_IN_PRICE_HIGH) func_param_flags->Set(func_param_flag_count++, String::New("high"));
+                if (input_paraminfo->flags & TA_IN_PRICE_LOW) func_param_flags->Set(func_param_flag_count++, String::New("low"));
+                if (input_paraminfo->flags & TA_IN_PRICE_CLOSE) func_param_flags->Set(func_param_flag_count++, String::New("close"));
+                if (input_paraminfo->flags & TA_IN_PRICE_VOLUME) func_param_flags->Set(func_param_flag_count++, String::New("volume"));
+                if (input_paraminfo->flags & TA_IN_PRICE_OPENINTEREST) func_param_flags->Set(func_param_flag_count++, String::New("openinterest"));
+                if (input_paraminfo->flags & TA_IN_PRICE_TIMESTAMP) func_param_flags->Set(func_param_flag_count++, String::New("timestamp"));
+                
+                // Save the function flag definitions
+                func_param_object->Set(String::New("flags"), func_param_flags);
+            }
+            
             // Save the function parameter
-            inParams->Set(i, String::New(input_paraminfo->paramName));
+            inParams->Set(i, func_param_object);
             
         }
         
@@ -198,9 +234,41 @@ class Talib : ObjectWrap {
             
             // Get the function input parameter information
             TA_GetOptInputParameterInfo(func_info->handle, i, &opt_paraminfo);
+
+            // Create the function parameter information
+            func_param_object = Object::New();
+            func_param_object->Set(String::New("name"), String::New(opt_paraminfo->paramName));
+            func_param_object->Set(String::New("displayName"), String::New(opt_paraminfo->displayName));
+            func_param_object->Set(String::New("defaultValue"), Number::New(opt_paraminfo->defaultValue));
+            func_param_object->Set(String::New("hint"), String::New(opt_paraminfo->hint));
+
+            // Add the function parameter type
+            switch(opt_paraminfo->type) {
+                case TA_OptInput_RealRange: func_param_object->Set(String::New("type"), String::New("real_range")); break;
+                case TA_OptInput_RealList: func_param_object->Set(String::New("type"), String::New("real_list")); break;
+                case TA_OptInput_IntegerRange: func_param_object->Set(String::New("type"), String::New("integer_range")); break;
+                case TA_OptInput_IntegerList: func_param_object->Set(String::New("type"), String::New("integer_list")); break;
+            }
+
+            // Add the function parameter flags
+            if (opt_paraminfo->flags > 0) {
+
+                // Create a new function flags array
+                func_param_flags = Array::New();
+                func_param_flag_count = 0;
+
+                // Set the function flag defitions
+                if (opt_paraminfo->flags & TA_OPTIN_IS_PERCENT) func_param_flags->Set(func_param_flag_count++, String::New("percent"));
+                if (opt_paraminfo->flags & TA_OPTIN_IS_DEGREE) func_param_flags->Set(func_param_flag_count++, String::New("degree"));
+                if (opt_paraminfo->flags & TA_OPTIN_IS_CURRENCY) func_param_flags->Set(func_param_flag_count++, String::New("currency"));
+                if (opt_paraminfo->flags & TA_OPTIN_ADVANCED) func_param_flags->Set(func_param_flag_count++, String::New("advanced"));
+                
+                // Save the function flag definitions
+                func_param_object->Set(String::New("flags"), func_param_flags);
+            }
             
             // Save the function parameter
-            inOptParams->Set(i, String::New(opt_paraminfo->paramName));
+            inOptParams->Set(i, func_param_object);
             
         }
         
@@ -209,9 +277,45 @@ class Talib : ObjectWrap {
             
             // Get the function input parameter information
             TA_GetOutputParameterInfo(func_info->handle, i, &output_paraminfo);
+
+            // Create the function parameter information
+            func_param_object = Object::New();
+            func_param_object->Set(String::New("name"), String::New(output_paraminfo->paramName));
+
+            // Add the function parameter type
+            switch(output_paraminfo->type) {
+                case TA_Output_Real: func_param_object->Set(String::New("type"), String::New("real")); break;
+                case TA_Output_Integer: func_param_object->Set(String::New("type"), String::New("integer")); break;
+            }
+
+            // Add the function parameter flags
+            if (output_paraminfo->flags > 0) {
+
+                // Create a new function flags array
+                func_param_flags = Array::New();
+                func_param_flag_count = 0;
+
+                // Set the function flag defitions
+                if (output_paraminfo->flags & TA_OUT_LINE) func_param_flags->Set(func_param_flag_count++, String::New("line"));
+                if (output_paraminfo->flags & TA_OUT_DOT_LINE) func_param_flags->Set(func_param_flag_count++, String::New("line_dot"));
+                if (output_paraminfo->flags & TA_OUT_DASH_LINE) func_param_flags->Set(func_param_flag_count++, String::New("line_dash"));
+                if (output_paraminfo->flags & TA_OUT_DOT) func_param_flags->Set(func_param_flag_count++, String::New("dot"));
+                if (output_paraminfo->flags & TA_OUT_HISTO) func_param_flags->Set(func_param_flag_count++, String::New("histogram"));
+                if (output_paraminfo->flags & TA_OUT_PATTERN_BOOL) func_param_flags->Set(func_param_flag_count++, String::New("pattern_bool"));
+                if (output_paraminfo->flags & TA_OUT_PATTERN_BULL_BEAR) func_param_flags->Set(func_param_flag_count++, String::New("pattern_bull_bear"));
+                if (output_paraminfo->flags & TA_OUT_PATTERN_STRENGTH) func_param_flags->Set(func_param_flag_count++, String::New("pattern_strength"));
+                if (output_paraminfo->flags & TA_OUT_POSITIVE) func_param_flags->Set(func_param_flag_count++, String::New("positive"));
+                if (output_paraminfo->flags & TA_OUT_NEGATIVE) func_param_flags->Set(func_param_flag_count++, String::New("negative"));
+                if (output_paraminfo->flags & TA_OUT_ZERO) func_param_flags->Set(func_param_flag_count++, String::New("zero"));
+                if (output_paraminfo->flags & TA_OUT_UPPER_LIMIT) func_param_flags->Set(func_param_flag_count++, String::New("limit_upper"));
+                if (output_paraminfo->flags & TA_OUT_LOWER_LIMIT) func_param_flags->Set(func_param_flag_count++, String::New("limit_lower"));
+                
+                // Save the function flag definitions
+                func_param_object->Set(String::New("flags"), func_param_flags);
+            }
             
             // Save the function parameter
-            outParams->Set(i, String::New(output_paraminfo->paramName));
+            outParams->Set(i, func_param_object);
             
         }
         
