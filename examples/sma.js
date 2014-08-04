@@ -17,8 +17,8 @@ talib.execute({
     inReal: marketData.close,
     optInTimePeriod: 180
 }, function (result) {
-	
-	// Show the result array
+
+    // Show the result array
     console.log("SMA Function Results:");
     console.log(result);
 

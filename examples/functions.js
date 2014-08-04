@@ -7,7 +7,7 @@ console.log("TALib Version: " + talib.version);
 
 // Display all indicator functions
 for (i in functions) {
-	console.log(functions[i].name);
+    console.log(functions[i].name);
 }
 
 // Display total indicator function count
