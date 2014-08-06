@@ -27,32 +27,20 @@ TALib is very simple to use.
 var talib = require('./build/Release/talib');
 console.log("TALib Version: " + talib.version);
 
-// display all available indicator function names
+// Display all available indicator function names
 var functions = talib.functions;
 for (i in functions) {
 	console.log(functions[i].name);
 }
-
-// retreive Average Directional Movement Index indicator specifications
-var function_desc = talib.explain("ADX");
-console.log(function_desc.name);
-console.log(function_desc.group);
-console.log(function_desc.hint);
-console.log(function_desc.inputs);
-console.log(function_desc.optInputs);
-console.log(function_desc.outputs);
 ```
 
-
 Assuming the market data is readily available, you can calculate an indicator by calling the `execute` function with the name of the indicator and required input parameters.
-
-
 
 ``` js
 // market data as arrays
 var marketdata = { open: [...], close: [...], high: [...], low: [...], volume: [...] };
 
-// execute Average Directional Movement Index indicator function with time period 9
+// execute Average Directional Movement Index indicator with time period 9
 talib.execute({
     name: "ADX",
     startIdx: 0,
@@ -71,21 +59,73 @@ talib.execute({
 
 Input parameters can be discovered by:
 
-```
-console.log("Inputs:", talib.explain("ADX").inputs);
-# Inputs: ['inPriceHLC']   // Pass the keys  'high', 'low', 'close' with an array of values
+``` js
+// Retreive Average Directional Movement Index indicator specifications
+var function_desc = talib.explain("ADX");
+console.dir(function_desc);
 
-console.log("Inputs:", talib.explain("AVGPRICE").inputs);
-# Inputs: ['inPriceOHLC']   // Pass the keys  'open', 'high', 'low', 'close' with an array of values
 
-console.log("Inputs:", talib.explain("MFI").inputs);
-# Inputs: ['inPriceHLCV']  // Pass the keys  'high', 'low', 'close', 'volume' with an array of values
+{ 
+  // Function Name
+  name: 'ADX',
 
-console.log("Inputs:", talib.explain("LINEARREG").inputs);
-# Inputs: ['inReal']  // Pass the key 'inReal' with an array of values
+  // Function Group Name
+  group: 'Momentum Indicators',
 
-// There are a few other various for inPrice[H|L|C|O|V] as well as inReal0, inReal1
+  // Function Description
+  hint: 'Average Directional Movement Index',
 
+  // Input Parameters
+  inputs:
+   [ { 
+       // Parameter Name
+       name: 'inPriceHLC',
+
+       // Parameter Type 
+       //   price, real, or integer
+       type: 'price',
+
+       // Parameter keys to be passed in when calling the function
+       //   open, high, low, close, volume, 
+       //   openinterest, or timestamp
+       flags: [ 'high', 'low', 'close' ] } ],
+  
+  // Optional Input Parameters
+  optInputs:
+   [ { 
+       // Parameter Name
+       name: 'optInTimePeriod',
+
+       // Parameter Display Label
+       displayName: 'Time Period',
+
+       // Parameter Default Value
+       defaultValue: 14,
+
+       // Parameter Description
+       hint: 'Number of period',
+
+       // Parameter Type
+       //   real_range, real_integer, 
+       //   integer_range, or integer_list
+       type: 'range_integer' } ],
+
+  // Output Values
+  outputs: 
+   [ { 
+       // Value Name
+       name: 'outReal', 
+
+       // Value Type
+       //   real or integer
+       type: 'real',
+
+       // Suggested Value Visualization Hint
+       //   line, line_dot, line_dash, dot, 
+       //   histogram, pattern_bool, pattern_bull_bear, 
+       //   pattern_strength, positive, negative, zero, 
+       //   limit_upper, or limit_lower
+       flags: [ 'line' ] } ] }
 ```
 
 For working examples look in the `examples/` directory. You can execute the examples using node.
@@ -94,7 +134,7 @@ For working examples look in the `examples/` directory. You can execute the exam
 
 ## License
 
-Copyright (c) 2012-2013 Mustafa Oransel
+Copyright (c) 2012-2014 Mustafa Oransel
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public

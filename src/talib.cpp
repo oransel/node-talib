@@ -75,7 +75,7 @@ class Talib : ObjectWrap {
         persistent_function_template->SetClassName(String::NewSymbol("TALib"));
         
         // Define fields
-        target->Set(String::New("version"), String::New("0.3.0"));
+        target->Set(String::New("version"), String::New("0.4.0"));
        
         // Define accessors
         target->SetAccessor(String::New("functions"), GetFunctions, NULL);
