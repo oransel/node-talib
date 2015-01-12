@@ -674,7 +674,7 @@ class Talib : ObjectWrap {
                     }
                     
                     // Get the number parameter value
-                    inRealList = V8toDoubleArray(Local<Array>::Cast(executeParameter->Get(String::New("inReal"))));
+                    inRealList = V8toDoubleArray(Local<Array>::Cast(executeParameter->Get(String::New(input_paraminfo->paramName))));
                      
                     // Save the number parameter
                     if ((retCode = TA_SetInputParamRealPtr(func_params, i, inRealList)) != TA_SUCCESS) {
