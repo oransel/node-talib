@@ -346,12 +346,24 @@ NAN_METHOD(Explain) {
 class ExecuteWorker : public NanAsyncWorker {
  public:
   ExecuteWorker(NanCallback *callback, work_object *wo): NanAsyncWorker(callback), wo(wo) {}
-  ~ExecuteWorker() {}
+  ~ExecuteWorker() {
 
-  // Executed inside the worker-thread.
-  // It is not safe to access V8, or V8 data structures
-  // here, so everything we need for input and output
-  // should go on `this`.
+    // Clear parameter holder memory
+    TA_ParamHolderFree(wo->func_params);
+    
+    // Dispose output arrays
+    for (int i=0; i < wo->nbOutput; i++) {
+        delete wo->outReal[i];
+        delete wo->outInt[i];
+    }
+    delete wo->outReal;
+    delete wo->outInt;
+    
+    // Dispose work object
+    delete wo;
+
+  }
+
   void Execute () {
 
     // Execute the function call with parameters declared
@@ -359,9 +371,6 @@ class ExecuteWorker : public NanAsyncWorker {
 
   }
 
-  // Executed when the async work is complete
-  // this function will be run inside the main event loop
-  // so it is safe to use V8 again
   void HandleOKCallback () {
     NanScope();
 
@@ -382,8 +391,7 @@ class ExecuteWorker : public NanAsyncWorker {
     
     // Check for execution error
     if (wo->retCode != TA_SUCCESS) {
-        REPORT_TA_ERROR(callback, wo->retCode);
-        goto execute_exit;
+        return REPORT_TA_ERROR(callback, wo->retCode);
     }
     
     // Set beginning index and number of elements
@@ -435,22 +443,6 @@ class ExecuteWorker : public NanAsyncWorker {
     // Return the execution result
     argv[0] = result;
     callback->Call(1, argv);
-
-    execute_exit:
-        
-        // Clear parameter holder memory
-        TA_ParamHolderFree(wo->func_params);
-        
-        // Dispose output arrays
-        for (int i=0; i < wo->nbOutput; i++) {
-            delete wo->outReal[i];
-            delete wo->outInt[i];
-        }
-        delete wo->outReal;
-        delete wo->outInt;
-        
-        // Dispose work object
-        delete wo;
 
   };
 
