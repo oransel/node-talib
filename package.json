@@ -1,29 +1,42 @@
 {
   "author": "Mustafa Oransel",
-  "contributors": ["Alfred Omega"],
+  "contributors": [
+    "Alfred Omega"
+  ],
   "name": "talib",
   "description": "Technical Analysis Library",
-  "version": "0.4.2",
-  "homepage":"https://github.com/oransel/node-talib",
+  "version": "0.5.0",
+  "homepage": "https://github.com/oransel/node-talib",
   "repository": {
-    "type":"git",
-    "url":"https://github.com/oransel/node-talib.git"
+    "type": "git",
+    "url": "https://github.com/oransel/node-talib.git"
   },
-  "os": ["darwin", "linux"],
-  "scripts":{
-    "preinstall":"cd ./src/lib && node build.js && cd ../../ && node-gyp configure && node-gyp build",
-    "preuninstall":"rm -rf build/* && cd ./src/lib && node clean.js && cd ../../"
+  "os": [
+    "darwin",
+    "linux"
+  ],
+  "scripts": {
+    "preinstall": "cd ./src/lib && node build.js && cd ../../ && node-gyp configure && node-gyp build",
+    "preuninstall": "rm -rf build/* && cd ./src/lib && node clean.js && cd ../../"
   },
   "main": "build/Release/talib.node",
   "engines": {
     "node": ">=0.10.0"
   },
-  "dependencies": {},
+  "dependencies": {
+    "nan": "^1.7.0"
+  },
   "devDependencies": {},
   "optionalDependencies": {},
-  "keywords":["talib","stocks","stock market"],
-  "licenses":[
-    {"type":"LGPL License",
-    "url":"http://www.gnu.org/licenses/lgpl.html"}
+  "keywords": [
+    "talib",
+    "stocks",
+    "stock market"
+  ],
+  "licenses": [
+    {
+      "type": "LGPL License",
+      "url": "http://www.gnu.org/licenses/lgpl.html"
+    }
   ]
 }
