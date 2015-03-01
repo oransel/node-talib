@@ -16,8 +16,8 @@
     "linux"
   ],
   "scripts": {
-    "preinstall": "cd ./src/lib && node build.js && cd ../../ && node-gyp configure && node-gyp build",
-    "preuninstall": "rm -rf build/* && cd ./src/lib && node clean.js && cd ../../"
+    "install": "node ./src/lib/build.js && node-gyp configure && node-gyp build",
+    "clean": "rm -rf ./build && rm -rf ./node_modules && node ./src/lib/clean.js"
   },
   "main": "build/Release/talib.node",
   "engines": {
