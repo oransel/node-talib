@@ -15,7 +15,7 @@ The source code is available at [github](http://github.com/oransel/node-talib). 
 Once you have the source, you can build the module by running
 
 	npm install
-	
+
 in the main directory. If everything goes well, the module will be available in the build/Release folder.
 
 ## Examples

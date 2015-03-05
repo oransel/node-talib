@@ -1,3 +1,6 @@
+0.5.0 2015-03-04:
+	Added nodejs 0.12 compatibility
+
 0.4.2 2015-01-24:
 	Fixing version reported issue
 
