@@ -47,6 +47,8 @@ struct work_object {
     int outNBElement;
     double **outReal;
     int **outInt;
+    double **garbage;
+    int garbage_count;
 };
 
 static void REPORT_TA_ERROR(NanCallback *callback, TA_RetCode retCode) {
@@ -419,6 +421,12 @@ class ExecuteWorker : public NanAsyncWorker {
   ExecuteWorker(NanCallback *callback, work_object *wo): NanAsyncWorker(callback), wo(wo) {}
   ~ExecuteWorker() {
 
+    // Clear the arrays allocated
+    for (int i=0; i < wo->garbage_count; i++) {
+        delete[] wo->garbage[i];
+    }
+    delete[] wo->garbage;
+
     // Clear parameter holder memory
     TA_ParamHolderFree(wo->func_params);
     
@@ -537,7 +545,7 @@ NAN_METHOD(Execute) {
     double *low             = NULL;
     double *volume          = NULL;
     double *openInterest    = NULL;
-    
+
     double *inRealList      = NULL;
     
     // Numeric values
@@ -641,6 +649,8 @@ NAN_METHOD(Execute) {
     }
 
     // Loop for all the input parameters
+    double **garbage = (double **)malloc(func_info->nbInput * 6 * sizeof(double*));
+    int garbage_count = 0;
     for (int i=0; i < (int)func_info->nbInput; i++) {
 
         // Get the function input parameter information
@@ -660,6 +670,9 @@ NAN_METHOD(Execute) {
                         
                         // Clear parameter holder memory
                         TA_ParamHolderFree(func_params);
+
+                        // Clear values memory
+                        delete[] garbage;
                         
                         // Return internal error
                         REPORT_INTERNAL_ERROR(cb, "First argument must contain 'open' field");
@@ -669,7 +682,7 @@ NAN_METHOD(Execute) {
                     
                     // Get the open prices
                     open = V8_TO_DOUBLE_ARRAY(Local<Array>::Cast(executeParameter->Get(NanNew<String>("open"))));
-                    
+                    garbage[garbage_count++] = open;
                 }
                 
                 // Check if the parameter info requires high price
@@ -682,6 +695,7 @@ NAN_METHOD(Execute) {
                         TA_ParamHolderFree(func_params);
 
                         // Clear values memory
+                        delete[] garbage;
                         if (open)
                             delete[] open;
                         
@@ -693,7 +707,8 @@ NAN_METHOD(Execute) {
                     
                     // Get the high prices
                     high = V8_TO_DOUBLE_ARRAY(Local<Array>::Cast(executeParameter->Get(NanNew<String>("high"))));
-                    
+                    garbage[garbage_count++] = high;
+
                 }
                 
                 // Check if the parameter info requires low price
@@ -706,6 +721,7 @@ NAN_METHOD(Execute) {
                         TA_ParamHolderFree(func_params);
                         
                         // Clear values memory
+                        delete[] garbage;
                         if (open)
                             delete[] open;
                         if (high)
@@ -719,6 +735,7 @@ NAN_METHOD(Execute) {
                     
                     // Get the low prices
                     low = V8_TO_DOUBLE_ARRAY(Local<Array>::Cast(executeParameter->Get(NanNew<String>("low"))));
+                    garbage[garbage_count++] = low;
                     
                 }
                 
@@ -732,6 +749,7 @@ NAN_METHOD(Execute) {
                         TA_ParamHolderFree(func_params);
                         
                         // Clear values memory
+                        delete[] garbage;
                         if (open)
                             delete[] open;
                         if (low)
@@ -747,6 +765,7 @@ NAN_METHOD(Execute) {
                     
                     // Get the close prices
                     close = V8_TO_DOUBLE_ARRAY(Local<Array>::Cast(executeParameter->Get(NanNew<String>("close"))));
+                    garbage[garbage_count++] = close;
                     
                 }
                 
@@ -760,6 +779,7 @@ NAN_METHOD(Execute) {
                         TA_ParamHolderFree(func_params);
 
                         // Clear values memory
+                        delete[] garbage;
                         if (open)
                             delete[] open;
                         if (close)
@@ -777,6 +797,7 @@ NAN_METHOD(Execute) {
                     
                     // Get the volume
                     volume = V8_TO_DOUBLE_ARRAY(Local<Array>::Cast(executeParameter->Get(NanNew<String>("volume"))));
+                    garbage[garbage_count++] = volume;
                     
                 }
                 
@@ -790,6 +811,7 @@ NAN_METHOD(Execute) {
                         TA_ParamHolderFree(func_params);
                         
                         // Clear values memory
+                        delete[] garbage;
                         if (close)
                             delete[] close;
                         if (volume)
@@ -807,6 +829,7 @@ NAN_METHOD(Execute) {
                     
                     // Get the open interest values
                     openInterest = V8_TO_DOUBLE_ARRAY(Local<Array>::Cast(executeParameter->Get(NanNew<String>("openInterest"))));
+                    garbage[garbage_count++] = openInterest;
                     
                 }
                 
@@ -819,7 +842,7 @@ NAN_METHOD(Execute) {
                     // Return TA error
                     REPORT_TA_ERROR(cb, retCode);
                     NanReturnUndefined();
-                    
+                     
                 }
                 
                 break;
@@ -841,6 +864,7 @@ NAN_METHOD(Execute) {
                 
                 // Get the number parameter value
                 inRealList = V8_TO_DOUBLE_ARRAY(Local<Array>::Cast(executeParameter->Get(NanNew<String>(input_paraminfo->paramName))));
+                garbage[garbage_count++] = inRealList;
                  
                 // Save the number parameter
                 if ((retCode = TA_SetInputParamRealPtr(func_params, i, inRealList)) != TA_SUCCESS) {
@@ -965,6 +989,8 @@ NAN_METHOD(Execute) {
     wo->func_params = func_params;
     wo->outReal = new double*[func_info->nbOutput];
     wo->outInt = new int*[func_info->nbOutput];
+    wo->garbage = garbage;
+    wo->garbage_count = garbage_count;
     
     // Loop for all the ouput parameters
     for (int i=0; i < wo->nbOutput; i++) {
