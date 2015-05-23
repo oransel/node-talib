@@ -1042,7 +1042,7 @@ void Init(Handle<Object> exports, Handle<Object> module) {
     TA_Initialize();
 
     // Define fields
-    exports->Set(NanNew("version"), NanNew("0.5.0"));
+    exports->Set(NanNew("version"), NanNew("0.6.0"));
 
     // Define accessors
     exports->SetAccessor(NanNew("functions"), Functions);
