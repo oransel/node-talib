@@ -343,6 +343,77 @@ NAN_METHOD(Explain) {
     NanReturnValue(TA_EXPLAIN_FUNCTION(*func_name));
 }
 
+NAN_GETTER(FunctionUnstIds) {
+    NanScope();
+
+    // Function object
+    Local<Object> func_object = NanNew<Object>();
+
+    // Add Function Unstable IDs
+    func_object->Set(NanNew("TA_FUNC_UNST_ADX"), NanNew(TA_FUNC_UNST_ADX));
+    func_object->Set(NanNew("TA_FUNC_UNST_ADXR"), NanNew(TA_FUNC_UNST_ADXR));
+    func_object->Set(NanNew("TA_FUNC_UNST_ATR"), NanNew(TA_FUNC_UNST_ATR));
+    func_object->Set(NanNew("TA_FUNC_UNST_CMO"), NanNew(TA_FUNC_UNST_CMO));
+    func_object->Set(NanNew("TA_FUNC_UNST_DX"), NanNew(TA_FUNC_UNST_DX));
+    func_object->Set(NanNew("TA_FUNC_UNST_EMA"), NanNew(TA_FUNC_UNST_EMA));
+    func_object->Set(NanNew("TA_FUNC_UNST_HT_DCPERIOD"), NanNew(TA_FUNC_UNST_HT_DCPERIOD));
+    func_object->Set(NanNew("TA_FUNC_UNST_HT_DCPHASE"), NanNew(TA_FUNC_UNST_HT_DCPHASE));
+    func_object->Set(NanNew("TA_FUNC_UNST_HT_PHASOR"), NanNew(TA_FUNC_UNST_HT_PHASOR));
+    func_object->Set(NanNew("TA_FUNC_UNST_HT_SINE"), NanNew(TA_FUNC_UNST_HT_SINE));
+    func_object->Set(NanNew("TA_FUNC_UNST_HT_TRENDLINE"), NanNew(TA_FUNC_UNST_HT_TRENDLINE));
+    func_object->Set(NanNew("TA_FUNC_UNST_HT_TRENDMODE"), NanNew(TA_FUNC_UNST_HT_TRENDMODE));
+    func_object->Set(NanNew("TA_FUNC_UNST_IMI"), NanNew(TA_FUNC_UNST_IMI));
+    func_object->Set(NanNew("TA_FUNC_UNST_KAMA"), NanNew(TA_FUNC_UNST_KAMA));
+    func_object->Set(NanNew("TA_FUNC_UNST_MAMA"), NanNew(TA_FUNC_UNST_MAMA));
+    func_object->Set(NanNew("TA_FUNC_UNST_MFI"), NanNew(TA_FUNC_UNST_MFI));
+    func_object->Set(NanNew("TA_FUNC_UNST_MINUS_DI"), NanNew(TA_FUNC_UNST_MINUS_DI));
+    func_object->Set(NanNew("TA_FUNC_UNST_MINUS_DM"), NanNew(TA_FUNC_UNST_MINUS_DM));
+    func_object->Set(NanNew("TA_FUNC_UNST_NATR"), NanNew(TA_FUNC_UNST_NATR));
+    func_object->Set(NanNew("TA_FUNC_UNST_PLUS_DI"), NanNew(TA_FUNC_UNST_PLUS_DI));
+    func_object->Set(NanNew("TA_FUNC_UNST_PLUS_DM"), NanNew(TA_FUNC_UNST_PLUS_DM));
+    func_object->Set(NanNew("TA_FUNC_UNST_RSI"), NanNew(TA_FUNC_UNST_RSI));
+    func_object->Set(NanNew("TA_FUNC_UNST_STOCHRSI"), NanNew(TA_FUNC_UNST_STOCHRSI));
+    func_object->Set(NanNew("TA_FUNC_UNST_T3"), NanNew(TA_FUNC_UNST_T3));
+    func_object->Set(NanNew("TA_FUNC_UNST_ALL"), NanNew(TA_FUNC_UNST_ALL));
+    func_object->Set(NanNew("TA_FUNC_UNST_NONE"), NanNew(TA_FUNC_UNST_NONE));
+
+    // Return function IDs
+    NanReturnValue(func_object);
+}
+
+NAN_METHOD(SetUnstablePeriod) {
+    NanScope();
+
+    // Check if any arguments are passed
+    if (args.Length() < 2) {
+        NanThrowTypeError("Two arguments required - FunctionUnstId, unstablePeriod");
+        NanReturnUndefined();
+    }
+
+    // Check if first parameter is a string
+    if (!args[0]->IsNumber()) {
+        NanThrowTypeError("First argument must be an Integer");
+        NanReturnUndefined();
+    }
+
+    // Check if first parameter is a string
+    if (!args[1]->IsNumber()) {
+        NanThrowTypeError("Second argument must be an Integer");
+        NanReturnUndefined();
+    }
+
+    // Retreive the parameters
+    TA_FuncUnstId func_id = (TA_FuncUnstId)args[0]->IntegerValue();
+    int unstable_period = args[1]->IntegerValue();
+    
+    Local<Boolean> result = NanFalse();
+    if (TA_SetUnstablePeriod(func_id, unstable_period) == TA_SUCCESS) {
+        result = NanTrue();
+    }
+
+    NanReturnValue(result);
+}
+
 class ExecuteWorker : public NanAsyncWorker {
  public:
   ExecuteWorker(NanCallback *callback, work_object *wo): NanAsyncWorker(callback), wo(wo) {}
@@ -949,10 +1020,12 @@ void Init(Handle<Object> exports, Handle<Object> module) {
 
     // Define accessors
     exports->SetAccessor(NanNew("functions"), Functions);
+    exports->SetAccessor(NanNew("functionUnstIds"), FunctionUnstIds);
 
     // Define functions
     exports->Set(NanNew("explain"), NanNew<FunctionTemplate>(Explain)->GetFunction());
     exports->Set(NanNew("execute"), NanNew<FunctionTemplate>(Execute)->GetFunction());
+    exports->Set(NanNew("setUnstablePeriod"), NanNew<FunctionTemplate>(SetUnstablePeriod)->GetFunction());
 }
 
 NODE_MODULE(talib, Init)
