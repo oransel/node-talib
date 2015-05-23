@@ -24,7 +24,7 @@
     "node": ">=0.10.0"
   },
   "dependencies": {
-    "nan": "^1.7.0"
+    "nan": "^1.8.0"
   },
   "devDependencies": {},
   "optionalDependencies": {},
