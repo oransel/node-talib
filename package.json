@@ -5,7 +5,7 @@
   ],
   "name": "talib",
   "description": "Technical Analysis Library",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "homepage": "https://github.com/oransel/node-talib",
   "repository": {
     "type": "git",
