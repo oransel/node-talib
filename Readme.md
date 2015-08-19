@@ -38,7 +38,7 @@ Assuming the market data is readily available, you can calculate an indicator by
 
 ``` js
 // market data as arrays
-var marketdata = { open: [...], close: [...], high: [...], low: [...], volume: [...] };
+var marketData = { open: [...], close: [...], high: [...], low: [...], volume: [...] };
 
 // execute Average Directional Movement Index indicator with time period 9
 talib.execute({
@@ -50,7 +50,7 @@ talib.execute({
     close: marketData.close,
     optInTimePeriod: 9
 }, function (result) {
-	
+
     console.log("ADX Function Results:");
     console.log(result);
 
@@ -65,7 +65,7 @@ var function_desc = talib.explain("ADX");
 console.dir(function_desc);
 
 
-{ 
+{
   // Function Name
   name: 'ADX',
 
@@ -77,22 +77,22 @@ console.dir(function_desc);
 
   // Input Parameters
   inputs:
-   [ { 
+   [ {
        // Parameter Name
        name: 'inPriceHLC',
 
-       // Parameter Type 
+       // Parameter Type
        //   price, real, or integer
        type: 'price',
 
        // Parameter keys to be passed in when calling the function
-       //   open, high, low, close, volume, 
+       //   open, high, low, close, volume,
        //   openinterest, or timestamp
        flags: [ 'high', 'low', 'close' ] } ],
-  
+
   // Optional Input Parameters
   optInputs:
-   [ { 
+   [ {
        // Parameter Name
        name: 'optInTimePeriod',
 
@@ -106,24 +106,24 @@ console.dir(function_desc);
        hint: 'Number of period',
 
        // Parameter Type
-       //   real_range, real_integer, 
+       //   real_range, real_integer,
        //   integer_range, or integer_list
        type: 'range_integer' } ],
 
   // Output Values
-  outputs: 
-   [ { 
+  outputs:
+   [ {
        // Value Name
-       name: 'outReal', 
+       name: 'outReal',
 
        // Value Type
        //   real or integer
        type: 'real',
 
        // Suggested Value Visualization Hint
-       //   line, line_dot, line_dash, dot, 
-       //   histogram, pattern_bool, pattern_bull_bear, 
-       //   pattern_strength, positive, negative, zero, 
+       //   line, line_dot, line_dash, dot,
+       //   histogram, pattern_bool, pattern_bull_bear,
+       //   pattern_strength, positive, negative, zero,
        //   limit_upper, or limit_lower
        flags: [ 'line' ] } ] }
 ```
@@ -140,7 +140,7 @@ This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
 License as published by the Free Software Foundation; either
 version 3 of the License, or (at your option) any later version.
- 
+
 This library is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU

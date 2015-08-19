@@ -6,10 +6,10 @@ console.log();
 console.log("TALib Version: " + talib.version);
 
 // Load market data
-var marketContents = fs.readFileSync('examples/marketdata.json','utf8'); 
+var marketContents = fs.readFileSync('examples/marketdata.json','utf8');
 var marketData = JSON.parse(marketContents);
 
-// execute ADX indicator function with time period 9
+// execute SMA indicator function with time period 180
 talib.execute({
     name: "SMA",
     startIdx: 0,
