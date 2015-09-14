@@ -33,7 +33,29 @@
 #include "./lib/include/ta_defs.h"
 #include "./lib/include/ta_func.h"
 
-using namespace v8;
+using v8::Function;
+using v8::FunctionTemplate;
+using v8::ObjectTemplate;
+using v8::Handle;
+using v8::Object;
+using v8::Local;
+using v8::MaybeLocal;
+using v8::Value;
+using v8::String;
+using v8::Number;
+using v8::Array;
+using Nan::GetFunction;
+using Nan::Callback;
+using Nan::New;
+using Nan::Set;
+using Nan::Get;
+using Nan::HandleScope;
+using Nan::ReturnValue;
+using Nan::ThrowTypeError;
+using Nan::Utf8String;
+using Nan::To;
+using Nan::AsyncWorker;
+using Nan::HasOwnProperty;
 
 // Async work object
 struct work_object {
@@ -51,24 +73,24 @@ struct work_object {
     int garbage_count;
 };
 
-static void REPORT_TA_ERROR(NanCallback *callback, TA_RetCode retCode) {
+static void REPORT_TA_ERROR(Callback *callback, TA_RetCode retCode) {
 
     // Report TA Error
     Local<Value> argv[1];
-    Local<Object> result = NanNew<Object>();
+    Local<Object> result = New<Object>();
     TA_RetCodeInfo retCodeInfo;
     TA_SetRetCodeInfo(retCode, &retCodeInfo);
-    result->Set(NanNew<String>("error"), NanNew<String>(retCodeInfo.enumStr));
+    Set(result, New<String>("error").ToLocalChecked(), New<String>(retCodeInfo.enumStr).ToLocalChecked());
     argv[0] = result;
     callback->Call(1, argv);
 }
 
-static void REPORT_INTERNAL_ERROR(NanCallback *callback, const char *error) {
+static void REPORT_INTERNAL_ERROR(Callback *callback, const char *error) {
 
     // Report Internal Error
     Local<Value> argv[1];
-    Local<Object> result = NanNew<Object>();
-    result->Set(NanNew<String>("error"), NanNew<String>(error));
+    Local<Object> result = New<Object>();
+    Set(result, New<String>("error").ToLocalChecked(), New<String>(error).ToLocalChecked());
     argv[0] = result;
     callback->Call(1, argv);
 }
@@ -82,8 +104,8 @@ static double *V8_TO_DOUBLE_ARRAY(Local<Array> array) {
     double *result = new double[length];
     
     // Store values in the double array
-    for (int i = 0; i < length; i++) { 
-        result[i] = array->Get(i)->NumberValue();
+    for (int i = 0; i < length; i++) {
+        result[i] = Get(array, i).ToLocalChecked()->Uint32Value();
     }
     
     // Return the double array result
@@ -120,21 +142,21 @@ static Handle<Value> TA_EXPLAIN_FUNCTION(const char *func_name) {
     TA_RetCode info_retcode = TA_GetFuncInfo(func_handle, &func_info);
     
     // Create the function object
-    func_object = NanNew<Object>();
+    func_object = New<Object>();
     
     // Check for error
     if ((handle_retcode != TA_SUCCESS) || (info_retcode != TA_SUCCESS))
         return func_object;
     
     // Create the execution parameters
-    inParams    = NanNew<Array>();
-    inOptParams = NanNew<Array>();
-    outParams   = NanNew<Array>();
+    inParams    = New<Array>();
+    inOptParams = New<Array>();
+    outParams   = New<Array>();
     
     // Store the function information
-    func_object->Set(NanNew("name"), NanNew(func_info->name));
-    func_object->Set(NanNew("group"), NanNew(func_info->group));
-    func_object->Set(NanNew("hint"), NanNew(func_info->hint));
+    Set(func_object, New("name").ToLocalChecked(), New(func_info->name).ToLocalChecked());
+    Set(func_object, New("group").ToLocalChecked(), New(func_info->group).ToLocalChecked());
+    Set(func_object, New("hint").ToLocalChecked(), New(func_info->hint).ToLocalChecked());
     
     // Loop for all the input parameters
     for (int i=0; i < (int)func_info->nbInput; i++) {
@@ -143,38 +165,38 @@ static Handle<Value> TA_EXPLAIN_FUNCTION(const char *func_name) {
         TA_GetInputParameterInfo(func_info->handle, i, &input_paraminfo);
         
         // Create the function parameter information
-        func_param_object = NanNew<Object>();
-        func_param_object->Set(NanNew("name"), NanNew(input_paraminfo->paramName));
+        func_param_object = New<Object>();
+        Set(func_param_object, New("name").ToLocalChecked(), New(input_paraminfo->paramName).ToLocalChecked());
 
         // Add the function parameter type
         switch(input_paraminfo->type) {
-            case TA_Input_Price: func_param_object->Set(NanNew("type"), NanNew("price")); break;
-            case TA_Input_Real: func_param_object->Set(NanNew("type"), NanNew("real")); break;
-            case TA_Input_Integer: func_param_object->Set(NanNew("type"), NanNew("integer")); break;
+            case TA_Input_Price: Set(func_param_object, New("type").ToLocalChecked(), New("price").ToLocalChecked()); break;
+            case TA_Input_Real: Set(func_param_object, New("type").ToLocalChecked(), New("real").ToLocalChecked()); break;
+            case TA_Input_Integer: Set(func_param_object, New("type").ToLocalChecked(), New("integer").ToLocalChecked()); break;
         }
 
         // Add the function parameter flags
         if (input_paraminfo->flags > 0) {
 
             // Create a new function flags array
-            func_param_flags = NanNew<Object>();
+            func_param_flags = New<Object>();
             func_param_flag_count = 0;
 
             // Set the function flag defitions
-            if (input_paraminfo->flags & TA_IN_PRICE_OPEN) func_param_flags->Set(func_param_flag_count++, NanNew("open"));
-            if (input_paraminfo->flags & TA_IN_PRICE_HIGH) func_param_flags->Set(func_param_flag_count++, NanNew("high"));
-            if (input_paraminfo->flags & TA_IN_PRICE_LOW) func_param_flags->Set(func_param_flag_count++, NanNew("low"));
-            if (input_paraminfo->flags & TA_IN_PRICE_CLOSE) func_param_flags->Set(func_param_flag_count++, NanNew("close"));
-            if (input_paraminfo->flags & TA_IN_PRICE_VOLUME) func_param_flags->Set(func_param_flag_count++, NanNew("volume"));
-            if (input_paraminfo->flags & TA_IN_PRICE_OPENINTEREST) func_param_flags->Set(func_param_flag_count++, NanNew("openinterest"));
-            if (input_paraminfo->flags & TA_IN_PRICE_TIMESTAMP) func_param_flags->Set(func_param_flag_count++, NanNew("timestamp"));
+            if (input_paraminfo->flags & TA_IN_PRICE_OPEN) Set(func_param_flags, func_param_flag_count++, New("open").ToLocalChecked());
+            if (input_paraminfo->flags & TA_IN_PRICE_HIGH) Set(func_param_flags, func_param_flag_count++, New("high").ToLocalChecked());
+            if (input_paraminfo->flags & TA_IN_PRICE_LOW) Set(func_param_flags, func_param_flag_count++, New("low").ToLocalChecked());
+            if (input_paraminfo->flags & TA_IN_PRICE_CLOSE) Set(func_param_flags, func_param_flag_count++, New("close").ToLocalChecked());
+            if (input_paraminfo->flags & TA_IN_PRICE_VOLUME) Set(func_param_flags, func_param_flag_count++, New("volume").ToLocalChecked());
+            if (input_paraminfo->flags & TA_IN_PRICE_OPENINTEREST) Set(func_param_flags, func_param_flag_count++, New("openinterest").ToLocalChecked());
+            if (input_paraminfo->flags & TA_IN_PRICE_TIMESTAMP) Set(func_param_flags, func_param_flag_count++, New("timestamp").ToLocalChecked());
             
             // Save the function flag definitions
-            func_param_object->Set(NanNew("flags"), func_param_flags);
+            Set(func_param_object, New("flags").ToLocalChecked(), func_param_flags);
         }
         
         // Save the function parameter
-        inParams->Set(i, func_param_object);
+        Set(inParams, i, func_param_object);
         
     }
     
@@ -185,39 +207,39 @@ static Handle<Value> TA_EXPLAIN_FUNCTION(const char *func_name) {
         TA_GetOptInputParameterInfo(func_info->handle, i, &opt_paraminfo);
 
         // Create the function parameter information
-        func_param_object = NanNew<Object>();
-        func_param_object->Set(NanNew("name"), NanNew(opt_paraminfo->paramName));
-        func_param_object->Set(NanNew("displayName"), NanNew(opt_paraminfo->displayName));
-        func_param_object->Set(NanNew("defaultValue"), NanNew(opt_paraminfo->defaultValue));
-        func_param_object->Set(NanNew("hint"), NanNew(opt_paraminfo->hint));
+        func_param_object = New<Object>();
+        Set(func_param_object, New<String>("name").ToLocalChecked(), New(opt_paraminfo->paramName).ToLocalChecked());
+        Set(func_param_object, New<String>("displayName").ToLocalChecked(), New(opt_paraminfo->displayName).ToLocalChecked());
+        Set(func_param_object, New<String>("defaultValue").ToLocalChecked(), New(opt_paraminfo->defaultValue));
+        Set(func_param_object, New<String>("hint").ToLocalChecked(), New(opt_paraminfo->hint).ToLocalChecked());
 
         // Add the function parameter type
         switch(opt_paraminfo->type) {
-            case TA_OptInput_RealRange: func_param_object->Set(NanNew("type"), NanNew("real_range")); break;
-            case TA_OptInput_RealList: func_param_object->Set(NanNew("type"), NanNew("real_list")); break;
-            case TA_OptInput_IntegerRange: func_param_object->Set(NanNew("type"), NanNew("integer_range")); break;
-            case TA_OptInput_IntegerList: func_param_object->Set(NanNew("type"), NanNew("integer_list")); break;
+            case TA_OptInput_RealRange: Set(func_param_object, New<String>("type").ToLocalChecked(), New<String>("real_range").ToLocalChecked()); break;
+            case TA_OptInput_RealList: Set(func_param_object, New<String>("type").ToLocalChecked(), New<String>("real_list").ToLocalChecked()); break;
+            case TA_OptInput_IntegerRange: Set(func_param_object, New<String>("type").ToLocalChecked(), New<String>("integer_range").ToLocalChecked()); break;
+            case TA_OptInput_IntegerList: Set(func_param_object, New<String>("type").ToLocalChecked(), New<String>("integer_list").ToLocalChecked()); break;
         }
 
         // Add the function parameter flags
         if (opt_paraminfo->flags > 0) {
 
             // Create a new function flags array
-            func_param_flags = NanNew<Object>();
+            func_param_flags = New<Object>();
             func_param_flag_count = 0;
 
             // Set the function flag defitions
-            if (opt_paraminfo->flags & TA_OPTIN_IS_PERCENT) func_param_flags->Set(func_param_flag_count++, NanNew("percent"));
-            if (opt_paraminfo->flags & TA_OPTIN_IS_DEGREE) func_param_flags->Set(func_param_flag_count++, NanNew("degree"));
-            if (opt_paraminfo->flags & TA_OPTIN_IS_CURRENCY) func_param_flags->Set(func_param_flag_count++, NanNew("currency"));
-            if (opt_paraminfo->flags & TA_OPTIN_ADVANCED) func_param_flags->Set(func_param_flag_count++, NanNew("advanced"));
+            if (opt_paraminfo->flags & TA_OPTIN_IS_PERCENT) Set(func_param_object, func_param_flag_count++, New<String>("percent").ToLocalChecked());
+            if (opt_paraminfo->flags & TA_OPTIN_IS_DEGREE) Set(func_param_object, func_param_flag_count++, New<String>("degree").ToLocalChecked());
+            if (opt_paraminfo->flags & TA_OPTIN_IS_CURRENCY) Set(func_param_object, func_param_flag_count++, New<String>("currency").ToLocalChecked());
+            if (opt_paraminfo->flags & TA_OPTIN_ADVANCED) Set(func_param_object, func_param_flag_count++, New<String>("advanced").ToLocalChecked());
             
             // Save the function flag definitions
-            func_param_object->Set(NanNew("flags"), func_param_flags);
+            Set(func_param_object, New<String>("flags").ToLocalChecked(), func_param_flags);
         }
         
         // Save the function parameter
-        inOptParams->Set(i, func_param_object);
+        Set(inOptParams, i, func_param_object);
         
     }
     
@@ -228,57 +250,57 @@ static Handle<Value> TA_EXPLAIN_FUNCTION(const char *func_name) {
         TA_GetOutputParameterInfo(func_info->handle, i, &output_paraminfo);
 
         // Create the function parameter information
-        func_param_object = NanNew<Object>();
-        func_param_object->Set(NanNew("name"), NanNew(output_paraminfo->paramName));
+        func_param_object = New<Object>();
+        Set(func_param_object, New<String>("name").ToLocalChecked(), New(output_paraminfo->paramName).ToLocalChecked());
 
         // Add the function parameter type
         switch(output_paraminfo->type) {
-            case TA_Output_Real: func_param_object->Set(NanNew("type"), NanNew("real")); break;
-            case TA_Output_Integer: func_param_object->Set(NanNew("type"), NanNew("integer")); break;
+            case TA_Output_Real: Set(func_param_object, New<String>("type").ToLocalChecked(), New<String>("real").ToLocalChecked()); break;
+            case TA_Output_Integer: Set(func_param_object, New<String>("type").ToLocalChecked(), New<String>("integer").ToLocalChecked()); break;
         }
 
         // Add the function parameter flags
         if (output_paraminfo->flags > 0) {
 
             // Create a new function flags array
-            func_param_flags = NanNew<Object>();
+            func_param_flags = New<Object>();
             func_param_flag_count = 0;
 
             // Set the function flag defitions
-            if (output_paraminfo->flags & TA_OUT_LINE) func_param_flags->Set(func_param_flag_count++, NanNew("line"));
-            if (output_paraminfo->flags & TA_OUT_DOT_LINE) func_param_flags->Set(func_param_flag_count++, NanNew("line_dot"));
-            if (output_paraminfo->flags & TA_OUT_DASH_LINE) func_param_flags->Set(func_param_flag_count++, NanNew("line_dash"));
-            if (output_paraminfo->flags & TA_OUT_DOT) func_param_flags->Set(func_param_flag_count++, NanNew("dot"));
-            if (output_paraminfo->flags & TA_OUT_HISTO) func_param_flags->Set(func_param_flag_count++, NanNew("histogram"));
-            if (output_paraminfo->flags & TA_OUT_PATTERN_BOOL) func_param_flags->Set(func_param_flag_count++, NanNew("pattern_bool"));
-            if (output_paraminfo->flags & TA_OUT_PATTERN_BULL_BEAR) func_param_flags->Set(func_param_flag_count++, NanNew("pattern_bull_bear"));
-            if (output_paraminfo->flags & TA_OUT_PATTERN_STRENGTH) func_param_flags->Set(func_param_flag_count++, NanNew("pattern_strength"));
-            if (output_paraminfo->flags & TA_OUT_POSITIVE) func_param_flags->Set(func_param_flag_count++, NanNew("positive"));
-            if (output_paraminfo->flags & TA_OUT_NEGATIVE) func_param_flags->Set(func_param_flag_count++, NanNew("negative"));
-            if (output_paraminfo->flags & TA_OUT_ZERO) func_param_flags->Set(func_param_flag_count++, NanNew("zero"));
-            if (output_paraminfo->flags & TA_OUT_UPPER_LIMIT) func_param_flags->Set(func_param_flag_count++, NanNew("limit_upper"));
-            if (output_paraminfo->flags & TA_OUT_LOWER_LIMIT) func_param_flags->Set(func_param_flag_count++, NanNew("limit_lower"));
+            if (output_paraminfo->flags & TA_OUT_LINE) Set(func_param_object, func_param_flag_count++, New<String>("line").ToLocalChecked());
+            if (output_paraminfo->flags & TA_OUT_DOT_LINE) Set(func_param_object, func_param_flag_count++, New<String>("line_dot").ToLocalChecked());
+            if (output_paraminfo->flags & TA_OUT_DASH_LINE) Set(func_param_object, func_param_flag_count++, New<String>("line_dash").ToLocalChecked());
+            if (output_paraminfo->flags & TA_OUT_DOT) Set(func_param_object, func_param_flag_count++, New<String>("dot").ToLocalChecked());
+            if (output_paraminfo->flags & TA_OUT_HISTO) Set(func_param_object, func_param_flag_count++, New<String>("histogram").ToLocalChecked());
+            if (output_paraminfo->flags & TA_OUT_PATTERN_BOOL) Set(func_param_object, func_param_flag_count++, New<String>("pattern_bool").ToLocalChecked());
+            if (output_paraminfo->flags & TA_OUT_PATTERN_BULL_BEAR) Set(func_param_object, func_param_flag_count++, New<String>("pattern_bull_bear").ToLocalChecked());
+            if (output_paraminfo->flags & TA_OUT_PATTERN_STRENGTH) Set(func_param_object, func_param_flag_count++, New<String>("pattern_strength").ToLocalChecked());
+            if (output_paraminfo->flags & TA_OUT_POSITIVE) Set(func_param_object, func_param_flag_count++, New<String>("positive").ToLocalChecked());
+            if (output_paraminfo->flags & TA_OUT_NEGATIVE) Set(func_param_object, func_param_flag_count++, New<String>("negative").ToLocalChecked());
+            if (output_paraminfo->flags & TA_OUT_ZERO) Set(func_param_object, func_param_flag_count++, New<String>("zero").ToLocalChecked());
+            if (output_paraminfo->flags & TA_OUT_UPPER_LIMIT) Set(func_param_object, func_param_flag_count++, New<String>("limit_upper").ToLocalChecked());
+            if (output_paraminfo->flags & TA_OUT_LOWER_LIMIT) Set(func_param_object, func_param_flag_count++, New<String>("limit_lower").ToLocalChecked());
             
             // Save the function flag definitions
-            func_param_object->Set(NanNew("flags"), func_param_flags);
+            Set(func_param_object, New<String>("flags").ToLocalChecked(), func_param_flags);
         }
         
         // Save the function parameter
-        outParams->Set(i, func_param_object);
+        Set(outParams, i, func_param_object);
         
     }
     
     // Store the function parameters
-    func_object->Set(NanNew("inputs"), inParams);
-    func_object->Set(NanNew("optInputs"), inOptParams);
-    func_object->Set(NanNew("outputs"), outParams);
+    Set(func_object, New<String>("inputs").ToLocalChecked(), inParams);
+    Set(func_object, New<String>("optInputs").ToLocalChecked(), inOptParams);
+    Set(func_object, New<String>("outputs").ToLocalChecked(), outParams);
     
     return func_object;
     
 }
 
 NAN_GETTER(Functions) {
-    NanScope();
+    HandleScope();
 
     // Function group table
     TA_StringTable *group_table;
@@ -287,7 +309,7 @@ NAN_GETTER(Functions) {
     TA_StringTable *func_table;
 
     // Function name array
-    Local<Array> func_array = NanNew<Array>();
+    Local<Array> func_array = New<Array>();
 
     // Function count
     int func_count = 0;
@@ -305,7 +327,7 @@ NAN_GETTER(Functions) {
                 for (unsigned int func_index=0; func_index < func_table->size; func_index++) {
                     
                     // Save the function name to the array
-                    func_array->Set(func_count++, TA_EXPLAIN_FUNCTION(func_table->string[func_index]));
+                    Set(func_array, func_count++, TA_EXPLAIN_FUNCTION(func_table->string[func_index]));
                     
                 }
                 
@@ -321,104 +343,100 @@ NAN_GETTER(Functions) {
     }
 
     // Return function names
-    NanReturnValue(func_array);
+    info.GetReturnValue().Set(func_array);
 }
 
 NAN_METHOD(Explain) {
-    NanScope();
+    HandleScope();
 
     // Check if any arguments are passed
-    if (args.Length() < 1) {
-        NanThrowTypeError("One argument required - Function name");
-        NanReturnUndefined();
+    if (info.Length() < 1) {
+        ThrowTypeError("One argument required - Function name");
+        return;
     }
 
     // Check if first parameter is a string
-    if (!args[0]->IsString()) {
-        NanThrowTypeError("First argument must be a String");
-        NanReturnUndefined();
+    if (!info[0]->IsString()) {
+        ThrowTypeError("First argument must be a String");
+        return;
     }
 
     // Retreive the function name string
-    NanAsciiString func_name(args[0]->ToString());
+    Utf8String func_name(info[0]->ToString());
     
-    NanReturnValue(TA_EXPLAIN_FUNCTION(*func_name));
+    info.GetReturnValue().Set(TA_EXPLAIN_FUNCTION(*func_name));
 }
 
 NAN_GETTER(FunctionUnstIds) {
-    NanScope();
 
     // Function object
-    Local<Object> func_object = NanNew<Object>();
+    Local<Object> func_object = New<Object>();
 
     // Add Function Unstable IDs
-    func_object->Set(NanNew("TA_FUNC_UNST_ADX"), NanNew(TA_FUNC_UNST_ADX));
-    func_object->Set(NanNew("TA_FUNC_UNST_ADXR"), NanNew(TA_FUNC_UNST_ADXR));
-    func_object->Set(NanNew("TA_FUNC_UNST_ATR"), NanNew(TA_FUNC_UNST_ATR));
-    func_object->Set(NanNew("TA_FUNC_UNST_CMO"), NanNew(TA_FUNC_UNST_CMO));
-    func_object->Set(NanNew("TA_FUNC_UNST_DX"), NanNew(TA_FUNC_UNST_DX));
-    func_object->Set(NanNew("TA_FUNC_UNST_EMA"), NanNew(TA_FUNC_UNST_EMA));
-    func_object->Set(NanNew("TA_FUNC_UNST_HT_DCPERIOD"), NanNew(TA_FUNC_UNST_HT_DCPERIOD));
-    func_object->Set(NanNew("TA_FUNC_UNST_HT_DCPHASE"), NanNew(TA_FUNC_UNST_HT_DCPHASE));
-    func_object->Set(NanNew("TA_FUNC_UNST_HT_PHASOR"), NanNew(TA_FUNC_UNST_HT_PHASOR));
-    func_object->Set(NanNew("TA_FUNC_UNST_HT_SINE"), NanNew(TA_FUNC_UNST_HT_SINE));
-    func_object->Set(NanNew("TA_FUNC_UNST_HT_TRENDLINE"), NanNew(TA_FUNC_UNST_HT_TRENDLINE));
-    func_object->Set(NanNew("TA_FUNC_UNST_HT_TRENDMODE"), NanNew(TA_FUNC_UNST_HT_TRENDMODE));
-    func_object->Set(NanNew("TA_FUNC_UNST_IMI"), NanNew(TA_FUNC_UNST_IMI));
-    func_object->Set(NanNew("TA_FUNC_UNST_KAMA"), NanNew(TA_FUNC_UNST_KAMA));
-    func_object->Set(NanNew("TA_FUNC_UNST_MAMA"), NanNew(TA_FUNC_UNST_MAMA));
-    func_object->Set(NanNew("TA_FUNC_UNST_MFI"), NanNew(TA_FUNC_UNST_MFI));
-    func_object->Set(NanNew("TA_FUNC_UNST_MINUS_DI"), NanNew(TA_FUNC_UNST_MINUS_DI));
-    func_object->Set(NanNew("TA_FUNC_UNST_MINUS_DM"), NanNew(TA_FUNC_UNST_MINUS_DM));
-    func_object->Set(NanNew("TA_FUNC_UNST_NATR"), NanNew(TA_FUNC_UNST_NATR));
-    func_object->Set(NanNew("TA_FUNC_UNST_PLUS_DI"), NanNew(TA_FUNC_UNST_PLUS_DI));
-    func_object->Set(NanNew("TA_FUNC_UNST_PLUS_DM"), NanNew(TA_FUNC_UNST_PLUS_DM));
-    func_object->Set(NanNew("TA_FUNC_UNST_RSI"), NanNew(TA_FUNC_UNST_RSI));
-    func_object->Set(NanNew("TA_FUNC_UNST_STOCHRSI"), NanNew(TA_FUNC_UNST_STOCHRSI));
-    func_object->Set(NanNew("TA_FUNC_UNST_T3"), NanNew(TA_FUNC_UNST_T3));
-    func_object->Set(NanNew("TA_FUNC_UNST_ALL"), NanNew(TA_FUNC_UNST_ALL));
-    func_object->Set(NanNew("TA_FUNC_UNST_NONE"), NanNew(TA_FUNC_UNST_NONE));
+    Set(func_object, New<String>("TA_FUNC_UNST_ADX").ToLocalChecked(), New(TA_FUNC_UNST_ADX));
+    Set(func_object, New<String>("TA_FUNC_UNST_ADXR").ToLocalChecked(), New(TA_FUNC_UNST_ADXR));
+    Set(func_object, New<String>("TA_FUNC_UNST_ATR").ToLocalChecked(), New(TA_FUNC_UNST_ATR));
+    Set(func_object, New<String>("TA_FUNC_UNST_CMO").ToLocalChecked(), New(TA_FUNC_UNST_CMO));
+    Set(func_object, New<String>("TA_FUNC_UNST_DX").ToLocalChecked(), New(TA_FUNC_UNST_DX));
+    Set(func_object, New<String>("TA_FUNC_UNST_EMA").ToLocalChecked(), New(TA_FUNC_UNST_EMA));
+    Set(func_object, New<String>("TA_FUNC_UNST_HT_DCPERIOD").ToLocalChecked(), New(TA_FUNC_UNST_HT_DCPERIOD));
+    Set(func_object, New<String>("TA_FUNC_UNST_HT_DCPHASE").ToLocalChecked(), New(TA_FUNC_UNST_HT_DCPHASE));
+    Set(func_object, New<String>("TA_FUNC_UNST_HT_PHASOR").ToLocalChecked(), New(TA_FUNC_UNST_HT_PHASOR));
+    Set(func_object, New<String>("TA_FUNC_UNST_HT_SINE").ToLocalChecked(), New(TA_FUNC_UNST_HT_SINE));
+    Set(func_object, New<String>("TA_FUNC_UNST_HT_TRENDLINE").ToLocalChecked(), New(TA_FUNC_UNST_HT_TRENDLINE));
+    Set(func_object, New<String>("TA_FUNC_UNST_HT_TRENDMODE").ToLocalChecked(), New(TA_FUNC_UNST_HT_TRENDMODE));
+    Set(func_object, New<String>("TA_FUNC_UNST_IMI").ToLocalChecked(), New(TA_FUNC_UNST_IMI));
+    Set(func_object, New<String>("TA_FUNC_UNST_KAMA").ToLocalChecked(), New(TA_FUNC_UNST_KAMA));
+    Set(func_object, New<String>("TA_FUNC_UNST_MAMA").ToLocalChecked(), New(TA_FUNC_UNST_MAMA));
+    Set(func_object, New<String>("TA_FUNC_UNST_MFI").ToLocalChecked(), New(TA_FUNC_UNST_MFI));
+    Set(func_object, New<String>("TA_FUNC_UNST_MINUS_DI").ToLocalChecked(), New(TA_FUNC_UNST_MINUS_DI));
+    Set(func_object, New<String>("TA_FUNC_UNST_MINUS_DM").ToLocalChecked(), New(TA_FUNC_UNST_MINUS_DM));
+    Set(func_object, New<String>("TA_FUNC_UNST_NATR").ToLocalChecked(), New(TA_FUNC_UNST_NATR));
+    Set(func_object, New<String>("TA_FUNC_UNST_PLUS_DI").ToLocalChecked(), New(TA_FUNC_UNST_PLUS_DI));
+    Set(func_object, New<String>("TA_FUNC_UNST_PLUS_DM").ToLocalChecked(), New(TA_FUNC_UNST_PLUS_DM));
+    Set(func_object, New<String>("TA_FUNC_UNST_RSI").ToLocalChecked(), New(TA_FUNC_UNST_RSI));
+    Set(func_object, New<String>("TA_FUNC_UNST_STOCHRSI").ToLocalChecked(), New(TA_FUNC_UNST_STOCHRSI));
+    Set(func_object, New<String>("TA_FUNC_UNST_T3").ToLocalChecked(), New(TA_FUNC_UNST_T3));
+    Set(func_object, New<String>("TA_FUNC_UNST_ALL").ToLocalChecked(), New(TA_FUNC_UNST_ALL));
+    Set(func_object, New<String>("TA_FUNC_UNST_NONE").ToLocalChecked(), New(TA_FUNC_UNST_NONE));
 
     // Return function IDs
-    NanReturnValue(func_object);
+    info.GetReturnValue().Set(func_object);
 }
 
 NAN_METHOD(SetUnstablePeriod) {
-    NanScope();
 
     // Check if any arguments are passed
-    if (args.Length() < 2) {
-        NanThrowTypeError("Two arguments required - FunctionUnstId, unstablePeriod");
-        NanReturnUndefined();
+    if (info.Length() < 2) {
+        ThrowTypeError("Two arguments required - FunctionUnstId, unstablePeriod");
+        return;
     }
 
     // Check if first parameter is a string
-    if (!args[0]->IsNumber()) {
-        NanThrowTypeError("First argument must be an Integer");
-        NanReturnUndefined();
+    if (!info[0]->IsNumber()) {
+        ThrowTypeError("First argument must be an Integer");
+        return;
     }
 
     // Check if first parameter is a string
-    if (!args[1]->IsNumber()) {
-        NanThrowTypeError("Second argument must be an Integer");
-        NanReturnUndefined();
+    if (!info[1]->IsNumber()) {
+        ThrowTypeError("Second argument must be an Integer");
+        return;
     }
 
     // Retreive the parameters
-    TA_FuncUnstId func_id = (TA_FuncUnstId)args[0]->IntegerValue();
-    int unstable_period = args[1]->IntegerValue();
+    TA_FuncUnstId func_id = (TA_FuncUnstId)info[0]->Uint32Value();
+    int unstable_period = info[1]->Uint32Value();
     
-    Local<Boolean> result = NanFalse();
+    info.GetReturnValue().Set(false);
     if (TA_SetUnstablePeriod(func_id, unstable_period) == TA_SUCCESS) {
-        result = NanTrue();
+        info.GetReturnValue().Set(true);
     }
-
-    NanReturnValue(result);
 }
 
-class ExecuteWorker : public NanAsyncWorker {
+class ExecuteWorker : public AsyncWorker {
  public:
-  ExecuteWorker(NanCallback *callback, work_object *wo): NanAsyncWorker(callback), wo(wo) {}
+  ExecuteWorker(Callback *callback, work_object *wo): AsyncWorker(callback), wo(wo) {}
   ~ExecuteWorker() {
 
     // Clear the arrays allocated
@@ -451,15 +469,15 @@ class ExecuteWorker : public NanAsyncWorker {
   }
 
   void HandleOKCallback () {
-    NanScope();
+    HandleScope scope;
 
     // Create the outputs object
-    Local<Object> outputArray = NanNew<Object>();
+    Local<Object> outputArray = New<Object>();
     
     // Execution result object 
-    Local<Object> result = NanNew<Object>();
+    Local<Object> result = New<Object>();
     
-    // Result args
+    // Result info
     Local<Value> argv[1];
     
     // Determine the number of results
@@ -474,8 +492,8 @@ class ExecuteWorker : public NanAsyncWorker {
     }
     
     // Set beginning index and number of elements
-    result->Set(NanNew<String>("begIndex"), NanNew<Number>(wo->outBegIdx));
-    result->Set(NanNew<String>("nbElement"), NanNew<Number>(wo->outNBElement));
+    Set(result, New<String>("begIndex").ToLocalChecked(), New<Number>(wo->outBegIdx));
+    Set(result, New<String>("nbElement").ToLocalChecked(), New<Number>(wo->outNBElement));
     
     // Loop for all the output parameters
     for (int i=0; i < wo->nbOutput; i++) {
@@ -484,7 +502,7 @@ class ExecuteWorker : public NanAsyncWorker {
         TA_GetOutputParameterInfo(wo->func_handle, i, &output_paraminfo);
         
         // Create an array for results
-        Local<Array> resultArray = NanNew<Array>(resultLength);
+        Local<Array> resultArray = New<Array>(resultLength);
         
         // Loop for all the results
         for (int x = 0; x < resultLength; x++) {
@@ -496,7 +514,7 @@ class ExecuteWorker : public NanAsyncWorker {
                 case TA_Output_Real:
                     
                     // Set the real output value
-                    resultArray->Set(x, NanNew<Number>(wo->outReal[i][x]));
+                    Set(resultArray, x, New<Number>(wo->outReal[i][x]));
                     
                     break;
                     
@@ -504,7 +522,7 @@ class ExecuteWorker : public NanAsyncWorker {
                 case TA_Output_Integer:
                     
                     // Set the integer output value
-                    resultArray->Set(x, NanNew<Number>(wo->outInt[i][x]));
+                    Set(resultArray, x, New<Number>(wo->outInt[i][x]));
                     
                     break;
             }
@@ -512,12 +530,12 @@ class ExecuteWorker : public NanAsyncWorker {
         }
         
         // Set the result array
-        outputArray->Set(NanNew<String>(output_paraminfo->paramName), resultArray);
+        Set(outputArray, New<String>(output_paraminfo->paramName).ToLocalChecked(), resultArray);
         
     }
     
     // Set the outputs array
-    result->Set(NanNew<String>("result"), outputArray);
+    Set(result, New<String>("result").ToLocalChecked(), outputArray);
     
     // Return the execution result
     argv[0] = result;
@@ -530,13 +548,12 @@ class ExecuteWorker : public NanAsyncWorker {
 };
 
 NAN_METHOD(Execute) {
-    NanScope();
 
     // Execution parameter
     Local<Object> executeParameter;
 
     // Callback function
-    NanCallback *cb;
+    Callback *cb;
 
     // Price values
     double *open            = NULL;
@@ -570,82 +587,82 @@ NAN_METHOD(Execute) {
     const TA_OutputParameterInfo    *output_paraminfo;
 
     // Check the arguments
-    if (args.Length() < 2) {
-        NanThrowTypeError("Two arguments required - Object and Function");
-        NanReturnUndefined();
+    if (info.Length() < 2) {
+        ThrowTypeError("Two arguments required - Object and Function");
+        return;
     }
 
     // Check the execution parameter
-    if (!args[0]->IsObject()) {
-        NanThrowTypeError("First argument must be an Object with fields name, startIdx, endIdx and function input parameters");
-        NanReturnUndefined();
+    if (!info[0]->IsObject()) {
+        ThrowTypeError("First argument must be an Object with fields name, startIdx, endIdx and function input parameters");
+        return;
     }
     
     // Check the callback parameter
-    if (!args[1]->IsFunction()) {
-        NanThrowTypeError("Second argument must be a Function");
-        NanReturnUndefined();
+    if (!info[1]->IsFunction()) {
+        ThrowTypeError("Second argument must be a Function");
+        return;
     }
     
     // Get the execute parameter
-    executeParameter = args[0]->ToObject();
+    executeParameter = info[0]->ToObject();
     
     // Get the callback function
-    cb = new NanCallback(args[1].As<Function>());
+    cb = new Callback(info[1].As<Function>());
     
     // Check the function name parameter
-    if (!executeParameter->HasOwnProperty(NanNew<String>("name"))) {
+    if (!HasOwnProperty(executeParameter, New<String>("name").ToLocalChecked()).FromJust()) {
         REPORT_INTERNAL_ERROR(cb, "First argument must contain 'name' field");
-        NanReturnUndefined();
+        return;
     }
     
     // Retreive the function name string
-    NanAsciiString func_name(executeParameter->Get(NanNew<String>("name")));
+    Utf8String func_name( Get(executeParameter, New<String>("name").ToLocalChecked()).ToLocalChecked()->ToString() );
     
     // Check the start index
-    if (!executeParameter->HasOwnProperty(NanNew<String>("startIdx"))) {
+    if (!HasOwnProperty(executeParameter, New<String>("startIdx").ToLocalChecked()).FromJust()) {
         REPORT_INTERNAL_ERROR(cb, "First argument must contain 'startIdx' field");
-        NanReturnUndefined();
+        return;
     }
     
     // Check the end index
-    if (!executeParameter->HasOwnProperty(NanNew<String>("endIdx"))) {
+    if (!HasOwnProperty(executeParameter, New<String>("endIdx").ToLocalChecked()).FromJust()) {
         REPORT_INTERNAL_ERROR(cb, "First argument must contain 'endIdx' field");
-        NanReturnUndefined();
+        return;
     }
     
     // Refreive the start and end index
-    int startIdx = executeParameter->Get(NanNew<String>("startIdx"))->Int32Value();
-    int endIdx = executeParameter->Get(NanNew<String>("endIdx"))->Int32Value();
+    int startIdx = Get(executeParameter, New<String>("startIdx").ToLocalChecked()).ToLocalChecked()->Int32Value();
+    int endIdx = Get(executeParameter, New<String>("endIdx").ToLocalChecked()).ToLocalChecked()->Int32Value();
 
     // Check for negative indexes
     if ((startIdx < 0) || (endIdx < 0)) {
         REPORT_INTERNAL_ERROR(cb, "Arguments 'startIdx' and 'endIdx' need to be positive");
-        NanReturnUndefined();
+        return;
     }
 
     // Check for index correctness
     if (startIdx > endIdx) {
         REPORT_INTERNAL_ERROR(cb, "Argument 'startIdx' needs to be smaller than argument 'endIdx'");
-        NanReturnUndefined();
+        return;
     }
 
     // Retreive the function handle for function name
     if ((retCode = TA_GetFuncHandle(*func_name, &func_handle)) != TA_SUCCESS) {
         REPORT_TA_ERROR(cb, retCode);
-        NanReturnUndefined();
+        return;
     }
     
     // Retreive the function information for the function handle
     if ((retCode = TA_GetFuncInfo(func_handle, &func_info)) != TA_SUCCESS) {
         REPORT_TA_ERROR(cb, retCode);
-        NanReturnUndefined();
+        return;
     }
 
     // Allocate parameter holder memory for function handle
     if ((retCode = TA_ParamHolderAlloc(func_handle, &func_params)) != TA_SUCCESS) {
         REPORT_TA_ERROR(cb, retCode);
-        NanReturnUndefined();
+        return;
     }
 
     // Loop for all the input parameters
@@ -666,7 +683,7 @@ NAN_METHOD(Execute) {
                 if (input_paraminfo->flags & TA_IN_PRICE_OPEN) {
                     
                     // Check if the price object has open prices
-                    if (!executeParameter->HasOwnProperty(NanNew<String>("open"))) {
+                    if (!HasOwnProperty(executeParameter, New<String>("open").ToLocalChecked()).FromJust()) {
                         
                         // Clear parameter holder memory
                         TA_ParamHolderFree(func_params);
@@ -676,12 +693,12 @@ NAN_METHOD(Execute) {
                         
                         // Return internal error
                         REPORT_INTERNAL_ERROR(cb, "First argument must contain 'open' field");
-                        NanReturnUndefined();
+                        return;
                         
                     }
                     
                     // Get the open prices
-                    open = V8_TO_DOUBLE_ARRAY(Local<Array>::Cast(executeParameter->Get(NanNew<String>("open"))));
+                    open = V8_TO_DOUBLE_ARRAY(Local<Array>::Cast(Get(executeParameter, New<String>("open").ToLocalChecked()).ToLocalChecked()));
                     garbage[garbage_count++] = open;
                 }
                 
@@ -689,7 +706,7 @@ NAN_METHOD(Execute) {
                 if (input_paraminfo->flags & TA_IN_PRICE_HIGH) {
                     
                     // Check if the price object has high prices
-                    if (!executeParameter->HasOwnProperty(NanNew<String>("high"))) {
+                    if (!HasOwnProperty(executeParameter, New<String>("high").ToLocalChecked()).FromJust()) {
                         
                         // Clear parameter holder memory
                         TA_ParamHolderFree(func_params);
@@ -701,12 +718,12 @@ NAN_METHOD(Execute) {
                         
                         // Return internal error
                         REPORT_INTERNAL_ERROR(cb, "First argument must contain 'high' field");
-                        NanReturnUndefined();
+                        return;
                         
                     }
                     
                     // Get the high prices
-                    high = V8_TO_DOUBLE_ARRAY(Local<Array>::Cast(executeParameter->Get(NanNew<String>("high"))));
+                    high = V8_TO_DOUBLE_ARRAY(Local<Array>::Cast(Get(executeParameter, New<String>("high").ToLocalChecked()).ToLocalChecked()));
                     garbage[garbage_count++] = high;
 
                 }
@@ -715,7 +732,7 @@ NAN_METHOD(Execute) {
                 if (input_paraminfo->flags & TA_IN_PRICE_LOW) {
                     
                     // Check if the price object has low prices
-                    if (!executeParameter->HasOwnProperty(NanNew<String>("low"))) {
+                    if (!HasOwnProperty(executeParameter, New<String>("low").ToLocalChecked()).FromJust()) {
                         
                         // Clear parameter holder memory
                         TA_ParamHolderFree(func_params);
@@ -729,12 +746,12 @@ NAN_METHOD(Execute) {
                         
                         // Return internal error
                         REPORT_INTERNAL_ERROR(cb, "First argument must contain 'low' field");
-                        NanReturnUndefined();
+                        return;
                         
                     }
                     
                     // Get the low prices
-                    low = V8_TO_DOUBLE_ARRAY(Local<Array>::Cast(executeParameter->Get(NanNew<String>("low"))));
+                    low = V8_TO_DOUBLE_ARRAY(Local<Array>::Cast(Get(executeParameter, New<String>("low").ToLocalChecked()).ToLocalChecked()));
                     garbage[garbage_count++] = low;
                     
                 }
@@ -743,7 +760,7 @@ NAN_METHOD(Execute) {
                 if (input_paraminfo->flags & TA_IN_PRICE_CLOSE) {
                     
                     // Check if the price object has close prices
-                    if (!executeParameter->HasOwnProperty(NanNew<String>("close"))) {
+                    if (!HasOwnProperty(executeParameter, New<String>("close").ToLocalChecked()).FromJust()) {
                         
                         // Clear parameter holder memory
                         TA_ParamHolderFree(func_params);
@@ -759,12 +776,12 @@ NAN_METHOD(Execute) {
                         
                         // Return internal error
                         REPORT_INTERNAL_ERROR(cb, "First argument must contain 'close' field");
-                        NanReturnUndefined();
+                        return;
                         
                     }
                     
                     // Get the close prices
-                    close = V8_TO_DOUBLE_ARRAY(Local<Array>::Cast(executeParameter->Get(NanNew<String>("close"))));
+                    close = V8_TO_DOUBLE_ARRAY(Local<Array>::Cast(Get(executeParameter, New<String>("close").ToLocalChecked()).ToLocalChecked()));
                     garbage[garbage_count++] = close;
                     
                 }
@@ -773,7 +790,7 @@ NAN_METHOD(Execute) {
                 if (input_paraminfo->flags & TA_IN_PRICE_VOLUME) {
                     
                     // Check if the price object has volume
-                    if (!executeParameter->HasOwnProperty(NanNew<String>("volume"))) {
+                    if (!HasOwnProperty(executeParameter, New<String>("volume").ToLocalChecked()).FromJust()) {
                         
                         // Clear parameter holder memory
                         TA_ParamHolderFree(func_params);
@@ -791,12 +808,12 @@ NAN_METHOD(Execute) {
                         
                         // Return internal error
                         REPORT_INTERNAL_ERROR(cb, "First argument must contain 'volume' field");
-                        NanReturnUndefined();
+                        return;
                         
                     }
                     
                     // Get the volume
-                    volume = V8_TO_DOUBLE_ARRAY(Local<Array>::Cast(executeParameter->Get(NanNew<String>("volume"))));
+                    volume = V8_TO_DOUBLE_ARRAY(Local<Array>::Cast(Get(executeParameter, New<String>("volume").ToLocalChecked()).ToLocalChecked()));
                     garbage[garbage_count++] = volume;
                     
                 }
@@ -805,7 +822,7 @@ NAN_METHOD(Execute) {
                 if (input_paraminfo->flags & TA_IN_PRICE_OPENINTEREST) {
                     
                     // Check if the price object has open interest values
-                    if (!executeParameter->HasOwnProperty(NanNew<String>("openInterest"))) {
+                    if (!HasOwnProperty(executeParameter, New<String>("openInterest").ToLocalChecked()).FromJust()) {
                         
                         // Clear parameter holder memory
                         TA_ParamHolderFree(func_params);
@@ -823,12 +840,12 @@ NAN_METHOD(Execute) {
                         
                         // Return internal error
                         REPORT_INTERNAL_ERROR(cb, "First argument must contain 'openInterest' field");
-                        NanReturnUndefined();
+                        return;
                         
                     }
                     
                     // Get the open interest values
-                    openInterest = V8_TO_DOUBLE_ARRAY(Local<Array>::Cast(executeParameter->Get(NanNew<String>("openInterest"))));
+                    openInterest = V8_TO_DOUBLE_ARRAY(Local<Array>::Cast(Get(executeParameter, New<String>("openInterest").ToLocalChecked()).ToLocalChecked()));
                     garbage[garbage_count++] = openInterest;
                     
                 }
@@ -841,7 +858,7 @@ NAN_METHOD(Execute) {
                     
                     // Return TA error
                     REPORT_TA_ERROR(cb, retCode);
-                    NanReturnUndefined();
+                    return;
                      
                 }
                 
@@ -851,19 +868,19 @@ NAN_METHOD(Execute) {
             case TA_Input_Real:
                 
                 // Check if the input parameter object has real value
-                if (!executeParameter->HasOwnProperty(NanNew<String>(input_paraminfo->paramName))) {
+                if (!HasOwnProperty(executeParameter, New<String>(input_paraminfo->paramName).ToLocalChecked()).FromJust()) {
                     
                     // Clear parameter holder memory
                     TA_ParamHolderFree(func_params);
                     
                     // Return internal error
                     REPORT_INTERNAL_ERROR(cb, ((std::string)("First argument must contain '") + (std::string)(input_paraminfo->paramName) + (std::string)("' field")).c_str());
-                    NanReturnUndefined();
+                    return;
                     
                 }
                 
                 // Get the number parameter value
-                inRealList = V8_TO_DOUBLE_ARRAY(Local<Array>::Cast(executeParameter->Get(NanNew<String>(input_paraminfo->paramName))));
+                inRealList = V8_TO_DOUBLE_ARRAY(Local<Array>::Cast(Get(executeParameter, New<String>(input_paraminfo->paramName).ToLocalChecked()).ToLocalChecked()));
                 garbage[garbage_count++] = inRealList;
                  
                 // Save the number parameter
@@ -874,7 +891,7 @@ NAN_METHOD(Execute) {
                     
                     // Return TA error
                     REPORT_TA_ERROR(cb, retCode);
-                    NanReturnUndefined();
+                    return;
                     
                 }
                 
@@ -884,19 +901,19 @@ NAN_METHOD(Execute) {
             case TA_Input_Integer:
                 
                 // Check if the input parameter object has integer parameter
-                if (!executeParameter->HasOwnProperty(NanNew<String>(input_paraminfo->paramName))) {
+                if (!HasOwnProperty(executeParameter, New<String>(input_paraminfo->paramName).ToLocalChecked()).FromJust()) {
                     
                     // Clear parameter holder memory
                     TA_ParamHolderFree(func_params);
                     
                     // Return internal error
                     REPORT_INTERNAL_ERROR(cb, ((std::string)("First argument must contain '") + (std::string)(input_paraminfo->paramName) + (std::string)("' field")).c_str());
-                    NanReturnUndefined();
+                    return;
 
                 }
                 
                 // Get the integer parameter value
-                inInteger = executeParameter->Get(NanNew<String>(input_paraminfo->paramName))->IntegerValue();
+                inInteger = Get(executeParameter, New<String>(input_paraminfo->paramName).ToLocalChecked()).ToLocalChecked()->IntegerValue();
                 
                 // Save the integer parameter
                 if ((retCode = TA_SetInputParamIntegerPtr(func_params, i, &inInteger)) != TA_SUCCESS) {
@@ -906,7 +923,7 @@ NAN_METHOD(Execute) {
                     
                     // Return TA error
                     REPORT_TA_ERROR(cb, retCode);
-                    NanReturnUndefined();
+                    return;
                     
                 }
                 
@@ -923,14 +940,14 @@ NAN_METHOD(Execute) {
         TA_GetOptInputParameterInfo(func_info->handle, i, &opt_paraminfo);
         
         // Check if the optional parameter object has real value
-        if (!executeParameter->HasOwnProperty(NanNew<String>(opt_paraminfo->paramName))) {
+        if (!HasOwnProperty(executeParameter, New<String>(opt_paraminfo->paramName).ToLocalChecked()).FromJust()) {
             
             // Clear parameter holder memory
             TA_ParamHolderFree(func_params);
             
             // Return internal error
             REPORT_INTERNAL_ERROR(cb, ((std::string)("First argument must contain '") + (std::string)(opt_paraminfo->paramName) + (std::string)("' field")).c_str());
-            NanReturnUndefined();
+            return;
 
         }
         
@@ -941,7 +958,7 @@ NAN_METHOD(Execute) {
             case TA_OptInput_RealList:
                 
                 // Get the integer parameter value
-                inReal = executeParameter->Get(NanNew<String>(opt_paraminfo->paramName))->NumberValue();
+                inReal = Get(executeParameter, New<String>(opt_paraminfo->paramName).ToLocalChecked()).ToLocalChecked()->NumberValue();
                 
                 // Save the integer parameter
                 if ((retCode = TA_SetOptInputParamReal(func_params, i, inReal)) != TA_SUCCESS) {
@@ -951,7 +968,7 @@ NAN_METHOD(Execute) {
                     
                     // Return TA error
                     REPORT_TA_ERROR(cb, retCode);
-                    NanReturnUndefined();
+                    return;
                     
                 }
                 
@@ -960,7 +977,7 @@ NAN_METHOD(Execute) {
             case TA_OptInput_IntegerList:
                 
                 // Get the integer parameter value
-                inInteger = executeParameter->Get(NanNew<String>(opt_paraminfo->paramName))->IntegerValue();
+                inInteger = Get(executeParameter, New<String>(opt_paraminfo->paramName).ToLocalChecked()).ToLocalChecked()->IntegerValue();
                 
                 // Save the integer parameter
                 if ((retCode = TA_SetOptInputParamInteger(func_params, i, inInteger)) != TA_SUCCESS) {
@@ -970,7 +987,7 @@ NAN_METHOD(Execute) {
                     
                     // Return TA error
                     REPORT_TA_ERROR(cb, retCode);
-                    NanReturnUndefined();
+                    return;
                     
                 }
                 
@@ -1032,8 +1049,8 @@ NAN_METHOD(Execute) {
     }
 
     // Queue the work
-    NanAsyncQueueWorker(new ExecuteWorker(cb, wo));
-    NanReturnUndefined();
+    AsyncQueueWorker(new ExecuteWorker(cb, wo));
+    return;
 }
 
 void Init(Handle<Object> exports, Handle<Object> module) {
@@ -1042,16 +1059,16 @@ void Init(Handle<Object> exports, Handle<Object> module) {
     TA_Initialize();
 
     // Define fields
-    exports->Set(NanNew("version"), NanNew("0.6.0"));
+    Set(exports, New<String>("version").ToLocalChecked(), New<String>("1.0.0").ToLocalChecked());
 
     // Define accessors
-    exports->SetAccessor(NanNew("functions"), Functions);
-    exports->SetAccessor(NanNew("functionUnstIds"), FunctionUnstIds);
+    SetAccessor(exports, New<String>("functions").ToLocalChecked(), Functions);
+    SetAccessor(exports, New<String>("functionUnstIds").ToLocalChecked(), FunctionUnstIds);
 
     // Define functions
-    exports->Set(NanNew("explain"), NanNew<FunctionTemplate>(Explain)->GetFunction());
-    exports->Set(NanNew("execute"), NanNew<FunctionTemplate>(Execute)->GetFunction());
-    exports->Set(NanNew("setUnstablePeriod"), NanNew<FunctionTemplate>(SetUnstablePeriod)->GetFunction());
+    Set(exports, New<String>("explain").ToLocalChecked(), GetFunction(New<FunctionTemplate>(Explain)).ToLocalChecked());
+    Set(exports, New<String>("execute").ToLocalChecked(), GetFunction(New<FunctionTemplate>(Execute)).ToLocalChecked());
+    Set(exports, New<String>("setUnstablePeriod").ToLocalChecked(), GetFunction(New<FunctionTemplate>(SetUnstablePeriod)).ToLocalChecked());
 }
 
 NODE_MODULE(talib, Init)
