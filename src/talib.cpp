@@ -105,7 +105,7 @@ static double *V8_TO_DOUBLE_ARRAY(Local<Array> array) {
     
     // Store values in the double array
     for (int i = 0; i < length; i++) {
-        result[i] = Get(array, i).ToLocalChecked()->Uint32Value();
+        result[i] = Get(array, i).ToLocalChecked()->NumberValue();
     }
     
     // Return the double array result
