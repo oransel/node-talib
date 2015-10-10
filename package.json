@@ -1,11 +1,13 @@
 {
   "author": "Mustafa Oransel",
   "contributors": [
-    "Alfred Omega"
+    "Alfred Omega",
+    "Vedran Opacic",
+    "Kelvin Foo"
   ],
   "name": "talib",
   "description": "Technical Analysis Library",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "homepage": "https://github.com/oransel/node-talib",
   "repository": {
     "type": "git",
@@ -21,7 +23,7 @@
   },
   "main": "build/Release/talib.node",
   "engines": {
-    "node": ">=0.10.0"
+    "node": ">=4.1.1"
   },
   "dependencies": {
     "nan": "^2.0.9"
