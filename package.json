@@ -15,7 +15,8 @@
   },
   "os": [
     "darwin",
-    "linux"
+    "linux",
+    "win32"
   ],
   "scripts": {
     "install": "node ./src/lib/build.js && node-gyp configure && node-gyp build",
