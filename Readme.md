@@ -132,9 +132,13 @@ For working examples look in the `examples/` directory. You can execute the exam
 
 	node examples/adx.js
 
+## Roadmap
+
+There has been community work with Windows support. Windows support will be merged soon.
+
 ## License
 
-Copyright (c) 2012-2015 Mustafa Oransel
+Copyright (c) 2012-2017 Mustafa Oransel
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
