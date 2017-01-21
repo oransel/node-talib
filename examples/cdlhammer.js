@@ -18,7 +18,7 @@ talib.execute({
     high: marketData.high,
     low: marketData.low,
     close: marketData.close
-}, function (result) {
+}, function (err, result) {
 	
 	// Show the result array
     console.log("CDLHAMMER Function Results:");

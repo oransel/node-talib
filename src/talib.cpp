@@ -478,7 +478,7 @@ class ExecuteWorker : public AsyncWorker {
     Local<Object> result = New<Object>();
     
     // Result info
-    Local<Value> argv[1];
+    Local<Value> argv[2];
     
     // Determine the number of results
     int resultLength = wo->outNBElement;
@@ -538,8 +538,9 @@ class ExecuteWorker : public AsyncWorker {
     Set(result, New<String>("result").ToLocalChecked(), outputArray);
     
     // Return the execution result
-    argv[0] = result;
-    callback->Call(1, argv);
+    argv[0] = Nan::Null();
+    argv[1] = result;
+    callback->Call(2, argv);
 
   };
 
