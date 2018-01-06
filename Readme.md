@@ -1,4 +1,4 @@
-#node-talib
+# node-talib
 
 A thin [node.js](http://nodejs.org) wrapper around [TA-LIB](http://ta-lib.org/), a technical analysis library with 100+ [indicators](http://ta-lib.org/function.html) such as ADX, MACD, RSI, Stochastic, Bollinger Bands, TRIX and candlestick pattern recognition.
 
@@ -49,7 +49,7 @@ talib.execute({
     low: marketData.low,
     close: marketData.close,
     optInTimePeriod: 9
-}, function (result) {
+}, function (err, result) {
 
     console.log("ADX Function Results:");
     console.log(result);
@@ -128,13 +128,31 @@ console.dir(function_desc);
        flags: [ 'line' ] } ] }
 ```
 
+Some indicators require or accept a `optInMAType` flag:
+
+```
+SMA   = 0
+EMA   = 1
+WMA   = 2
+DEMA  = 3
+TEMA  = 4
+TRIMA = 5
+KAMA  = 6
+MAMA  = 7
+T3    = 8
+```
+
 For working examples look in the `examples/` directory. You can execute the examples using node.
 
 	node examples/adx.js
 
+## Roadmap
+
+There has been community work with Windows support. Windows support will be merged soon.
+
 ## License
 
-Copyright (c) 2012-2015 Mustafa Oransel
+Copyright (c) 2012-2017 Mustafa Oransel
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public

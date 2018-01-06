@@ -478,7 +478,7 @@ class ExecuteWorker : public AsyncWorker {
     Local<Object> result = New<Object>();
     
     // Result info
-    Local<Value> argv[1];
+    Local<Value> argv[2];
     
     // Determine the number of results
     int resultLength = wo->outNBElement;
@@ -538,8 +538,9 @@ class ExecuteWorker : public AsyncWorker {
     Set(result, New<String>("result").ToLocalChecked(), outputArray);
     
     // Return the execution result
-    argv[0] = result;
-    callback->Call(1, argv);
+    argv[0] = Nan::Null();
+    argv[1] = result;
+    callback->Call(2, argv);
 
   };
 
@@ -1059,7 +1060,7 @@ void Init(Handle<Object> exports, Handle<Object> module) {
     TA_Initialize();
 
     // Define fields
-    Set(exports, New<String>("version").ToLocalChecked(), New<String>("1.0.2").ToLocalChecked());
+    Set(exports, New<String>("version").ToLocalChecked(), New<String>("1.0.3").ToLocalChecked());
 
     // Define accessors
     SetAccessor(exports, New<String>("functions").ToLocalChecked(), Functions);

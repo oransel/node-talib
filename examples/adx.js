@@ -18,7 +18,7 @@ talib.execute({
     low: marketData.low,
     close: marketData.close,
     optInTimePeriod: 9
-}, function (result) {
+}, function (err, result) {
 
     // Show the result array
     console.log("ADX Function Results:");
