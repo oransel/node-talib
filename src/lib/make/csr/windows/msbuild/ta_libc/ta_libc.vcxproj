@@ -210,7 +210,7 @@
     <NMakeBuildCommandLine>lib /OUT:.\..\..\..\..\..\lib\ta_libc_$(Configuration).lib .\..\..\..\..\..\lib\ta_abstract_$(Configuration).lib .\..\..\..\..\..\lib\ta_common_$(Configuration).lib .\..\..\..\..\..\lib\ta_func_$(Configuration).lib</NMakeBuildCommandLine>
     <NMakeReBuildCommandLine>lib /OUT:.\..\..\..\..\..\lib\ta_libc_$(Configuration).lib .\..\..\..\..\..\lib\ta_abstract_$(Configuration).lib .\..\..\..\..\..\lib\ta_common_$(Configuration).lib .\..\..\..\..\..\lib\ta_func_$(Configuration).lib</NMakeReBuildCommandLine>
     <NMakeCleanCommandLine>del .\..\..\..\..\..\lib\ta_libc_$(Configuration).lib</NMakeCleanCommandLine>
-    <NMakeOutput> .\..\..\..\..\..\lib\ta_libc_$(Configuration).lib</NMakeOutput>
+    <NMakeOutput>.\..\..\..\..\..\lib\ta_libc_$(Configuration).lib</NMakeOutput>
     <TargetExt>.lib</TargetExt>
     <IntDir>.\..\..\..\..\..\temp\$(Configuration)\$(ProjectName)\</IntDir>
     <OutDir>.\..\..\..\..\..\lib\</OutDir>
