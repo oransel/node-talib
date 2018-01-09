@@ -2,6 +2,10 @@
 
 A thin [node.js](http://nodejs.org) wrapper around [TA-LIB](http://ta-lib.org/), a technical analysis library with 100+ [indicators](http://ta-lib.org/function.html) such as ADX, MACD, RSI, Stochastic, Bollinger Bands, TRIX and candlestick pattern recognition.
 
+## Windows Only
+
+If you are using __Windows__, you will need to install [windows-build-tools](https://www.npmjs.com/package/windows-build-tools), which downloads and installs Visual C++ Build Tools 2015 and Python 2.7, configuring your machine and npm appropriately.
+
 ## Installation
 
 To install the most recent release from npm, run:
@@ -11,8 +15,6 @@ To install the most recent release from npm, run:
 ## Building
 
 The source code is available at [github](http://github.com/oransel/node-talib). You can either clone the repository or download a zip file of the latest release.
-
-If you are using __Windows__, you will need to install [windows-build-tools](https://www.npmjs.com/package/windows-build-tools), which downloads and installs Visual C++ Build Tools 2015 and Python 2.7, configuring your machine and npm appropriately.
 
 Once you have the source, you can build the module by running
 
