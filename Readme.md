@@ -12,6 +12,8 @@ To install the most recent release from npm, run:
 
 The source code is available at [github](http://github.com/oransel/node-talib). You can either clone the repository or download a zip file of the latest release.
 
+If you are using __Windows__, you will need to install [windows-build-tools](https://www.npmjs.com/package/windows-build-tools), which downloads and installs Visual C++ Build Tools 2015 and Python 2.7, configuring your machine and npm appropriately.
+
 Once you have the source, you can build the module by running
 
 	npm install
@@ -148,11 +150,11 @@ For working examples look in the `examples/` directory. You can execute the exam
 
 ## Roadmap
 
-There has been community work with Windows support. Windows support will be merged soon.
+Windows support is merged, but there is a known issue with Win x86 that needs to be worked out.
 
 ## License
 
-Copyright (c) 2012-2017 Mustafa Oransel
+Copyright (c) 2012-2018 Mustafa Oransel
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
