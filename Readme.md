@@ -2,7 +2,10 @@
 
 A thin [node.js](http://nodejs.org) wrapper around [TA-LIB](http://ta-lib.org/), a technical analysis library with 100+ [indicators](http://ta-lib.org/function.html) such as ADX, MACD, RSI, Stochastic, Bollinger Bands, TRIX and candlestick pattern recognition.
 
-## Windows Only
+## Prerequisites
+
+* Node.js - [Install Node.js](http://nodejs.org/)
+* Windows Build Tools (Windows Only) - [windows-build-tools](https://www.npmjs.com/package/windows-build-tools)
 
 If you are using __Windows__, you will need to install [windows-build-tools](https://www.npmjs.com/package/windows-build-tools), which downloads and installs Visual C++ Build Tools 2015 and Python 2.7, configuring your machine and npm appropriately.
 

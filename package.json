@@ -3,11 +3,12 @@
   "contributors": [
     "Alfred Omega",
     "Vedran Opacic",
-    "Kelvin Foo"
+    "Kelvin Foo",
+    "Chris McGee"
   ],
   "name": "talib",
   "description": "Technical Analysis Library",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "homepage": "https://github.com/oransel/node-talib",
   "repository": {
     "type": "git",
