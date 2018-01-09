@@ -4,15 +4,17 @@ console.log('building talib functions...');
 
 if (process.platform == 'win32') {
   var msbuildPath = '"C:/Program Files';
+  var platform = 'Win32'
   if(process.arch == 'x64') {
     msbuildPath += ' (x86)'
+    platform = 'x64'
   }
 
   msbuildPath += '/MSBuild/14.0/Bin/';
 
   process.chdir('./src/lib/make/csr/windows/msbuild/');
 
-  exec(msbuildPath + 'MSBuild.exe" ./ta_lib.sln /property:Configuration=csr /property:Platform=x64', function(err, stdout, stderr) {
+  exec(msbuildPath + 'MSBuild.exe" ./ta_lib.sln /property:Configuration=csr /property:Platform=' + platform, function(err, stdout, stderr) {
     console.log(stdout, stderr);
   });
 } else {
