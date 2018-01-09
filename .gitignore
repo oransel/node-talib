@@ -5,3 +5,10 @@ build
 *.lo
 *.o
 node_modules
+
+// Windows build files
+*.lib
+*.obj
+*.log
+*.pdb
+*.tlog
