@@ -204,7 +204,7 @@
     <NMakeReBuildCommandLine>lib /OUT:$(OutDir)ta_libc_$(Configuration).lib $(OutDir)ta_abstract_$(Configuration).lib $(OutDir)ta_common_$(Configuration).lib $(OutDir)ta_func_$(Configuration).lib</NMakeReBuildCommandLine>
     <NMakeCleanCommandLine>del $(OutDir)ta_libc_$(Configuration).lib</NMakeCleanCommandLine>
     <NMakeOutput>$(OutDir)ta_libc_$(Configuration).lib</NMakeOutput>
-    <TargetExt>.a</TargetExt>
+    <TargetExt>.lib</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='csr|x64'">
     <NMakeBuildCommandLine>lib /OUT:.\..\..\..\..\..\lib\ta_libc_$(Configuration).lib .\..\..\..\..\..\lib\ta_abstract_$(Configuration).lib .\..\..\..\..\..\lib\ta_common_$(Configuration).lib .\..\..\..\..\..\lib\ta_func_$(Configuration).lib</NMakeBuildCommandLine>
