@@ -4,10 +4,10 @@ A thin [node.js](http://nodejs.org) wrapper around [TA-LIB](http://ta-lib.org/),
 
 ## Prerequisites
 
-* Node.js - [Install Node.js](http://nodejs.org/)
-* Windows Build Tools (Windows Only) - [windows-build-tools](https://www.npmjs.com/package/windows-build-tools)
+* [Node.js](http://nodejs.org/)
+* [Windows Build Tools](https://www.npmjs.com/package/windows-build-tools) (Windows Only)
 
-If you are using __Windows__, you will need to install [windows-build-tools](https://www.npmjs.com/package/windows-build-tools), which downloads and installs Visual C++ Build Tools 2015 and Python 2.7, configuring your machine and npm appropriately.
+If you are using __Windows__, you will need to install [Windows Build Tools](https://www.npmjs.com/package/windows-build-tools), which downloads and installs Visual C++ Build Tools 2015 and Python 2.7, configuring your machine and npm appropriately.
 
 ## Installation
 
@@ -152,10 +152,6 @@ T3    = 8
 For working examples look in the `examples/` directory. You can execute the examples using node.
 
 	node examples/adx.js
-
-## Roadmap
-
-Windows support is merged, but there is a known issue with Win x86 that needs to be worked out.
 
 ## License
 
