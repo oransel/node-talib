@@ -9,7 +9,7 @@
   ],
   "name": "talib",
   "description": "Technical Analysis Library",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "homepage": "https://github.com/oransel/node-talib",
   "repository": {
     "type": "git",
@@ -29,7 +29,7 @@
     "node": ">=4.1.1"
   },
   "dependencies": {
-    "nan": "^2.5.0"
+    "nan": "^2.10.0"
   },
   "devDependencies": {},
   "optionalDependencies": {},
