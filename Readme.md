@@ -5,9 +5,9 @@ A thin [node.js](http://nodejs.org) wrapper around [TA-LIB](http://ta-lib.org/),
 ## Prerequisites
 
 * [Node.js](http://nodejs.org/)
-* [Windows Build Tools](https://www.npmjs.com/package/windows-build-tools) (Windows Only)
+* [Windows Build Tools 2015](https://www.npmjs.com/package/windows-build-tools) (Windows Only)
 
-If you are using __Windows__, you will need to install [Windows Build Tools](https://www.npmjs.com/package/windows-build-tools), which downloads and installs Visual C++ Build Tools 2015 and Python 2.7, configuring your machine and npm appropriately.
+If you are using __Windows__, you will need to install [Windows Build Tools](https://www.npmjs.com/package/windows-build-tools) with the "--vs2015" param, which will download and install Visual C++ Build Tools 2015 and Python 2.7, configuring your machine and npm appropriately.
 
 ## Installation
 
