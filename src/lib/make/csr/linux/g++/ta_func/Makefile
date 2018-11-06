@@ -47,6 +47,7 @@ SOURCES =	../../../../../src/ta_func/ta_utility.c \
 		../../../../../src/ta_func/ta_ASIN.c \
 		../../../../../src/ta_func/ta_ATAN.c \
 		../../../../../src/ta_func/ta_ATR.c \
+		../../../../../src/ta_func/ta_AVGDEV.c \
 		../../../../../src/ta_func/ta_AVGPRICE.c \
 		../../../../../src/ta_func/ta_BBANDS.c \
 		../../../../../src/ta_func/ta_BETA.c \

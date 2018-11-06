@@ -1060,7 +1060,7 @@ void Init(Handle<Object> exports, Handle<Object> module) {
     TA_Initialize();
 
     // Define fields
-    Set(exports, New<String>("version").ToLocalChecked(), New<String>("1.0.3").ToLocalChecked());
+    Set(exports, New<String>("version").ToLocalChecked(), New<String>("1.0.6").ToLocalChecked());
 
     // Define accessors
     SetAccessor(exports, New<String>("functions").ToLocalChecked(), Functions);
