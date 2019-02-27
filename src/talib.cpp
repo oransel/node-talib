@@ -113,6 +113,72 @@ static double *V8_TO_DOUBLE_ARRAY(Local<Array> array) {
     
 }
 
+static Local<Object> generateResult(work_object *wo) {
+    // Create the outputs object
+    Local<Object> outputArray = New<Object>();
+
+    // Execution result object
+    Local<Object> result = New<Object>();
+
+    // Determine the number of results
+    int resultLength = wo->outNBElement;
+
+    // Function output parameter information
+    const TA_OutputParameterInfo *output_paraminfo;
+
+    // Check for execution error
+    if (wo->retCode != TA_SUCCESS) {
+        ThrowTypeError("Failed wo->retCode is not TA_SUCCESS");
+    }
+
+    // Set beginning index and number of elements
+    Set(result, New<String>("begIndex").ToLocalChecked(), New<Number>(wo->outBegIdx));
+    Set(result, New<String>("nbElement").ToLocalChecked(), New<Number>(wo->outNBElement));
+
+    // Loop for all the output parameters
+    for (int i=0; i < wo->nbOutput; i++) {
+
+        // Get the output parameter information
+        TA_GetOutputParameterInfo(wo->func_handle, i, &output_paraminfo);
+
+        // Create an array for results
+        Local<Array> resultArray = New<Array>(resultLength);
+
+        // Loop for all the results
+        for (int x = 0; x < resultLength; x++) {
+
+            // Determine the output type
+            switch(output_paraminfo->type) {
+
+                    // Output type real is needed
+                case TA_Output_Real:
+
+                    // Set the real output value
+                    Set(resultArray, x, New<Number>(wo->outReal[i][x]));
+
+                    break;
+
+                    // Output type integer is needed
+                case TA_Output_Integer:
+
+                    // Set the integer output value
+                    Set(resultArray, x, New<Number>(wo->outInt[i][x]));
+
+                    break;
+            }
+
+        }
+
+        // Set the result array
+        Set(outputArray, New<String>(output_paraminfo->paramName).ToLocalChecked(), resultArray);
+
+    }
+
+    // Set the outputs array
+    Set(result, New<String>("result").ToLocalChecked(), outputArray);
+    return result;
+}
+
 static Handle<Value> TA_EXPLAIN_FUNCTION(const char *func_name) {
         
     // Function flag counter
@@ -471,75 +537,12 @@ class ExecuteWorker : public AsyncWorker {
   void HandleOKCallback () {
     HandleScope scope;
 
-    // Create the outputs object
-    Local<Object> outputArray = New<Object>();
-    
-    // Execution result object 
-    Local<Object> result = New<Object>();
-    
     // Result info
     Local<Value> argv[2];
-    
-    // Determine the number of results
-    int resultLength = wo->outNBElement;
-    
-    // Function output parameter information
-    const TA_OutputParameterInfo *output_paraminfo;
-    
-    // Check for execution error
-    if (wo->retCode != TA_SUCCESS) {
-        return REPORT_TA_ERROR(callback, wo->retCode);
-    }
-    
-    // Set beginning index and number of elements
-    Set(result, New<String>("begIndex").ToLocalChecked(), New<Number>(wo->outBegIdx));
-    Set(result, New<String>("nbElement").ToLocalChecked(), New<Number>(wo->outNBElement));
-    
-    // Loop for all the output parameters
-    for (int i=0; i < wo->nbOutput; i++) {
-        
-        // Get the output parameter information
-        TA_GetOutputParameterInfo(wo->func_handle, i, &output_paraminfo);
-        
-        // Create an array for results
-        Local<Array> resultArray = New<Array>(resultLength);
-        
-        // Loop for all the results
-        for (int x = 0; x < resultLength; x++) {
-            
-            // Determine the output type
-            switch(output_paraminfo->type) {
-                    
-                    // Output type real is needed
-                case TA_Output_Real:
-                    
-                    // Set the real output value
-                    Set(resultArray, x, New<Number>(wo->outReal[i][x]));
-                    
-                    break;
-                    
-                    // Output type integer is needed
-                case TA_Output_Integer:
-                    
-                    // Set the integer output value
-                    Set(resultArray, x, New<Number>(wo->outInt[i][x]));
-                    
-                    break;
-            }
-            
-        }
-        
-        // Set the result array
-        Set(outputArray, New<String>(output_paraminfo->paramName).ToLocalChecked(), resultArray);
-        
-    }
-    
-    // Set the outputs array
-    Set(result, New<String>("result").ToLocalChecked(), outputArray);
-    
+
     // Return the execution result
     argv[0] = Nan::Null();
-    argv[1] = result;
+    argv[1] = generateResult(wo);
     callback->Call(2, argv);
 
   };
@@ -555,6 +558,7 @@ NAN_METHOD(Execute) {
 
     // Callback function
     Callback *cb;
+    bool isSync = FALSE;
 
     // Price values
     double *open            = NULL;
@@ -588,8 +592,8 @@ NAN_METHOD(Execute) {
     const TA_OutputParameterInfo    *output_paraminfo;
 
     // Check the arguments
-    if (info.Length() < 2) {
-        ThrowTypeError("Two arguments required - Object and Function");
+    if (info.Length() < 1) {
+        ThrowTypeError("argument required - Object");
         return;
     }
 
@@ -601,8 +605,7 @@ NAN_METHOD(Execute) {
     
     // Check the callback parameter
     if (!info[1]->IsFunction()) {
-        ThrowTypeError("Second argument must be a Function");
-        return;
+        isSync = TRUE;
     }
     
     // Get the execute parameter
@@ -1049,6 +1052,12 @@ NAN_METHOD(Execute) {
         
     }
 
+    if (isSync) {
+        wo->retCode = TA_CallFunc((const TA_ParamHolder *)wo->func_params, wo->startIdx, wo->endIdx, &wo->outBegIdx, &wo->outNBElement);
+        info.GetReturnValue().Set(generateResult(wo));
+        return;
+    }
+    
     // Queue the work
     AsyncQueueWorker(new ExecuteWorker(cb, wo));
     return;
