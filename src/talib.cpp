@@ -558,7 +558,7 @@ NAN_METHOD(Execute) {
 
     // Callback function
     Callback *cb;
-    bool isSync = FALSE;
+    bool isSync = false;
 
     // Price values
     double *open            = NULL;
@@ -605,7 +605,7 @@ NAN_METHOD(Execute) {
     
     // Check the callback parameter
     if (!info[1]->IsFunction()) {
-        isSync = TRUE;
+        isSync = true;
     }
     
     // Get the execute parameter
