@@ -65,7 +65,7 @@ talib.execute({
 ```
 
 you can also make synchronized call
-```
+``` js
 var result = talib.execute({
     name: "ADX",
     startIdx: 0,
