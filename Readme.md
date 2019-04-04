@@ -115,7 +115,7 @@ console.dir(function_desc);
        // Parameter Type
        //   real_range, real_integer,
        //   integer_range, or integer_list
-       type: 'range_integer' } ],
+       type: 'integer_range' } ],
 
   // Output Values
   outputs:
