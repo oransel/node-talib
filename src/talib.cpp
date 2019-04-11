@@ -44,6 +44,7 @@ using v8::Value;
 using v8::String;
 using v8::Number;
 using v8::Array;
+using v8::Context;
 using Nan::GetFunction;
 using Nan::Callback;
 using Nan::New;
@@ -1063,7 +1064,7 @@ NAN_METHOD(Execute) {
     return;
 }
 
-void Init(Handle<Object> exports, Handle<Object> module) {
+void Init(Local<Object> exports, Local<Context> context) {
 
     // Initialize the engine
     TA_Initialize();
@@ -1081,4 +1082,8 @@ void Init(Handle<Object> exports, Handle<Object> module) {
     Set(exports, New<String>("setUnstablePeriod").ToLocalChecked(), GetFunction(New<FunctionTemplate>(SetUnstablePeriod)).ToLocalChecked());
 }
 
-NODE_MODULE(talib, Init)
+// https://github.com/schroffl/node-lzo/pull/11/files
+// Initialize this addon to be context-aware.
+NODE_MODULE_INIT(/* exports, module, context */) {
+    Init(exports, context);
+}
