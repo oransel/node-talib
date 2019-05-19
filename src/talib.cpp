@@ -36,7 +36,6 @@
 using v8::Function;
 using v8::FunctionTemplate;
 using v8::ObjectTemplate;
-using v8::Handle;
 using v8::Object;
 using v8::Local;
 using v8::MaybeLocal;
@@ -105,7 +104,7 @@ static double *V8_TO_DOUBLE_ARRAY(Local<Array> array) {
     
     // Store values in the double array
     for (int i = 0; i < length; i++) {
-        result[i] = Get(array, i).ToLocalChecked()->NumberValue();
+        result[i] = Get(array, i).ToLocalChecked()->NumberValue(Nan::GetCurrentContext()).FromJust();
     }
     
     // Return the double array result
@@ -113,7 +112,7 @@ static double *V8_TO_DOUBLE_ARRAY(Local<Array> array) {
     
 }
 
-static Handle<Value> TA_EXPLAIN_FUNCTION(const char *func_name) {
+static Local<Value> TA_EXPLAIN_FUNCTION(const char *func_name) {
         
     // Function flag counter
     int func_param_flag_count;
@@ -362,7 +361,7 @@ NAN_METHOD(Explain) {
     }
 
     // Retreive the function name string
-    Utf8String func_name(info[0]->ToString());
+    Utf8String func_name(info[0]->ToString(Nan::GetCurrentContext()).FromMaybe(v8::Local<v8::String>()));
     
     info.GetReturnValue().Set(TA_EXPLAIN_FUNCTION(*func_name));
 }
@@ -425,8 +424,8 @@ NAN_METHOD(SetUnstablePeriod) {
     }
 
     // Retreive the parameters
-    TA_FuncUnstId func_id = (TA_FuncUnstId)info[0]->Uint32Value();
-    int unstable_period = info[1]->Uint32Value();
+    TA_FuncUnstId func_id = (TA_FuncUnstId)info[0]->Uint32Value(Nan::GetCurrentContext()).FromJust();
+    int unstable_period = info[1]->Uint32Value(Nan::GetCurrentContext()).FromJust();
     
     info.GetReturnValue().Set(false);
     if (TA_SetUnstablePeriod(func_id, unstable_period) == TA_SUCCESS) {
@@ -606,7 +605,7 @@ NAN_METHOD(Execute) {
     }
     
     // Get the execute parameter
-    executeParameter = info[0]->ToObject();
+    executeParameter = info[0]->ToObject(Nan::GetCurrentContext()).FromMaybe(v8::Local<Object>());
     
     // Get the callback function
     cb = new Callback(info[1].As<Function>());
@@ -618,7 +617,7 @@ NAN_METHOD(Execute) {
     }
     
     // Retreive the function name string
-    Utf8String func_name( Get(executeParameter, New<String>("name").ToLocalChecked()).ToLocalChecked()->ToString() );
+    Utf8String func_name( Get(executeParameter, New<String>("name").ToLocalChecked()).ToLocalChecked()->ToString(Nan::GetCurrentContext()).FromMaybe(v8::Local<v8::String>()) );
     
     // Check the start index
     if (!HasOwnProperty(executeParameter, New<String>("startIdx").ToLocalChecked()).FromJust()) {
@@ -633,8 +632,8 @@ NAN_METHOD(Execute) {
     }
     
     // Refreive the start and end index
-    int startIdx = Get(executeParameter, New<String>("startIdx").ToLocalChecked()).ToLocalChecked()->Int32Value();
-    int endIdx = Get(executeParameter, New<String>("endIdx").ToLocalChecked()).ToLocalChecked()->Int32Value();
+    int startIdx = Get(executeParameter, New<String>("startIdx").ToLocalChecked()).ToLocalChecked()->Int32Value(Nan::GetCurrentContext()).FromJust();
+    int endIdx = Get(executeParameter, New<String>("endIdx").ToLocalChecked()).ToLocalChecked()->Int32Value(Nan::GetCurrentContext()).FromJust();
 
     // Check for negative indexes
     if ((startIdx < 0) || (endIdx < 0)) {
@@ -914,7 +913,7 @@ NAN_METHOD(Execute) {
                 }
                 
                 // Get the integer parameter value
-                inInteger = Get(executeParameter, New<String>(input_paraminfo->paramName).ToLocalChecked()).ToLocalChecked()->IntegerValue();
+                inInteger = Get(executeParameter, New<String>(input_paraminfo->paramName).ToLocalChecked()).ToLocalChecked()->IntegerValue(Nan::GetCurrentContext()).FromJust();
                 
                 // Save the integer parameter
                 if ((retCode = TA_SetInputParamIntegerPtr(func_params, i, &inInteger)) != TA_SUCCESS) {
@@ -959,7 +958,7 @@ NAN_METHOD(Execute) {
             case TA_OptInput_RealList:
                 
                 // Get the integer parameter value
-                inReal = Get(executeParameter, New<String>(opt_paraminfo->paramName).ToLocalChecked()).ToLocalChecked()->NumberValue();
+                inReal = Get(executeParameter, New<String>(opt_paraminfo->paramName).ToLocalChecked()).ToLocalChecked()->NumberValue(Nan::GetCurrentContext()).FromJust();
                 
                 // Save the integer parameter
                 if ((retCode = TA_SetOptInputParamReal(func_params, i, inReal)) != TA_SUCCESS) {
@@ -978,7 +977,7 @@ NAN_METHOD(Execute) {
             case TA_OptInput_IntegerList:
                 
                 // Get the integer parameter value
-                inInteger = Get(executeParameter, New<String>(opt_paraminfo->paramName).ToLocalChecked()).ToLocalChecked()->IntegerValue();
+                inInteger = Get(executeParameter, New<String>(opt_paraminfo->paramName).ToLocalChecked()).ToLocalChecked()->IntegerValue(Nan::GetCurrentContext()).FromJust();
                 
                 // Save the integer parameter
                 if ((retCode = TA_SetOptInputParamInteger(func_params, i, inInteger)) != TA_SUCCESS) {
@@ -1054,13 +1053,13 @@ NAN_METHOD(Execute) {
     return;
 }
 
-void Init(Handle<Object> exports, Handle<Object> module) {
+void Init(Local<Object> exports, Local<Object> module) {
 
     // Initialize the engine
     TA_Initialize();
 
     // Define fields
-    Set(exports, New<String>("version").ToLocalChecked(), New<String>("1.0.6").ToLocalChecked());
+    Set(exports, New<String>("version").ToLocalChecked(), New<String>("1.0.7").ToLocalChecked());
 
     // Define accessors
     SetAccessor(exports, New<String>("functions").ToLocalChecked(), Functions);
