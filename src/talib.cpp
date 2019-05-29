@@ -1057,13 +1057,13 @@ NAN_METHOD(Execute) {
         info.GetReturnValue().Set(generateResult(wo));
         return;
     }
-    
+
     // Queue the work
     AsyncQueueWorker(new ExecuteWorker(cb, wo));
     return;
 }
 
-void Init(Local<Object> exports, Local<Object> module) {
+void Init(Local<Object> exports, Local<Object> context) {
 
     // Initialize the engine
     TA_Initialize();
