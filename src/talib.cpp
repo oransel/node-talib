@@ -1063,7 +1063,7 @@ NAN_METHOD(Execute) {
     return;
 }
 
-void Init(Local<Object> exports, Local<Object> context) {
+void Init(Local<Object> exports, Local<Context> context) {
 
     // Initialize the engine
     TA_Initialize();
