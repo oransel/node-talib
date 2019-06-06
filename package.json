@@ -5,11 +5,12 @@
     "Vedran Opacic",
     "Kelvin Foo",
     "Chris McGee",
-    "Marek Magdziak"
+    "Marek Magdziak",
+    "hao-wang"
   ],
   "name": "talib",
   "description": "Technical Analysis Library",
-  "version": "1.0.7",
+  "version": "1.1.0",
   "homepage": "https://github.com/oransel/node-talib",
   "repository": {
     "type": "git",
@@ -26,7 +27,7 @@
   },
   "main": "build/Release/talib.node",
   "engines": {
-    "node": ">=4.1.1"
+    "node": ">=8.16.0"
   },
   "dependencies": {
     "nan": "^2.13.2"
