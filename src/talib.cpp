@@ -5,7 +5,7 @@
  |   ||   ||   ||---'---|    ,---||    ||   |
  `   '`---'`---'`---'   `---'`---^`---'``---'
  
- NODE-TALIB Copyright (c) 2012-2015, Mustafa Oransel
+ NODE-TALIB Copyright (c) 2012-2019, Mustafa Oransel
  All rights reserved.
  
  This library is free software; you can redistribute it and/or
@@ -1069,7 +1069,7 @@ void Init(Local<Object> exports, Local<Context> context) {
     TA_Initialize();
 
     // Define fields
-    Set(exports, New<String>("version").ToLocalChecked(), New<String>("1.0.7").ToLocalChecked());
+    Set(exports, New<String>("version").ToLocalChecked(), New<String>("1.1.2").ToLocalChecked());
 
     // Define accessors
     SetAccessor(exports, New<String>("functions").ToLocalChecked(), Functions);
