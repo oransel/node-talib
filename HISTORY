@@ -1,3 +1,6 @@
+1.1.0 2019-06-05:
+	Added support for synchronized call
+
 0.5.0 2015-03-04:
 	Added nodejs 0.12 compatibility
 
