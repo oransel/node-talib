@@ -64,6 +64,19 @@ talib.execute({
 });
 ```
 
+you can also make synchronized call
+``` js
+var result = talib.execute({
+    name: "ADX",
+    startIdx: 0,
+    endIdx: marketData.close.length - 1,
+    high: marketData.high,
+    low: marketData.low,
+    close: marketData.close,
+    optInTimePeriod: 9
+});
+```
+
 Input parameters can be discovered by:
 
 ``` js
