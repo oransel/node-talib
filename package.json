@@ -30,7 +30,8 @@
     "node": ">=8.16.0"
   },
   "dependencies": {
-    "nan": "^2.13.2"
+    "nan": "^2.13.2",
+    "prebuild-install": "^5.3.2"
   },
   "devDependencies": {},
   "optionalDependencies": {},
