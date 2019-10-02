@@ -11,10 +11,10 @@
   "name": "talib",
   "description": "Technical Analysis Library",
   "version": "1.1.2",
-  "homepage": "https://github.com/TrendSpider/node-talib",
+  "homepage": "https://github.com/TrendSpider/node_talib",
   "repository": {
     "type": "git",
-    "url": "https://github.com/TrendSpider/node-talib.git"
+    "url": "https://github.com/TrendSpider/node_talib.git"
   },
   "os": [
     "darwin",
