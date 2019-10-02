@@ -11,10 +11,10 @@
   "name": "talib",
   "description": "Technical Analysis Library",
   "version": "1.1.2",
-  "homepage": "https://github.com/oransel/node-talib",
+  "homepage": "https://github.com/TrendSpider/node-talib",
   "repository": {
     "type": "git",
-    "url": "https://github.com/oransel/node-talib.git"
+    "url": "https://github.com/TrendSpider/node-talib.git"
   },
   "os": [
     "darwin",
@@ -22,7 +22,7 @@
     "win32"
   ],
   "scripts": {
-    "install": "node ./src/lib/build.js && node-gyp configure && node-gyp build",
+    "install": "prebuild-install || node ./src/lib/build.js && node-gyp configure && node-gyp build",
     "clean": "node ./src/lib/clean.js"
   },
   "main": "build/Release/talib.node",
