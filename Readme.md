@@ -2,6 +2,26 @@
 
 A thin [node.js](http://nodejs.org) wrapper around [TA-LIB](http://ta-lib.org/), a technical analysis library with 100+ [indicators](http://ta-lib.org/function.html) such as ADX, MACD, RSI, Stochastic, Bollinger Bands, TRIX and candlestick pattern recognition.
 
+## Donations
+
+Support this project for new features and improvements. 
+
+|Bitcoin Address|
+|:---:|
+|18gT1wmq3RMoLBm2ZFv4PhiYbU5CMAQC6P|
+|![alt text](https://raw.githubusercontent.com/oransel/node-talib/master/other/github-bitcoin-donations.png "18gT1wmq3RMoLBm2ZFv4PhiYbU5CMAQC6P")|
+
+A few of the pending improvements include:
+
+* Update dependencies and modernize the library
+* Machine Learning integration for predictions, forecasting, etc.
+* Proper support for Windows and other platforms
+* Audit all functions
+* Add unit tests
+* Official documentation
+* Better technincal support
+* ....and more.
+
 ## Prerequisites
 
 * [Node.js](http://nodejs.org/)
@@ -168,7 +188,7 @@ For working examples look in the `examples/` directory. You can execute the exam
 
 ## License
 
-Copyright (c) 2012-2018 Mustafa Oransel
+Copyright (c) 2012-2019 Mustafa Oransel
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
