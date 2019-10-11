@@ -1055,6 +1055,18 @@ NAN_METHOD(Execute) {
     if (isSync) {
         wo->retCode = TA_CallFunc((const TA_ParamHolder *)wo->func_params, wo->startIdx, wo->endIdx, &wo->outBegIdx, &wo->outNBElement);
         info.GetReturnValue().Set(generateResult(wo));
+        for (int i=0; i < wo->garbage_count; i++) {
+            delete[] wo->garbage[i];
+        }
+        delete[] wo->garbage;
+        TA_ParamHolderFree(wo->func_params);
+        for (int i=0; i < wo->nbOutput; i++) {
+            delete wo->outReal[i];
+            delete wo->outInt[i];
+        }
+        delete wo->outReal;
+        delete wo->outInt;
+        delete wo;
         return;
     }
 
@@ -1069,7 +1081,7 @@ void Init(Local<Object> exports, Local<Context> context) {
     TA_Initialize();
 
     // Define fields
-    Set(exports, New<String>("version").ToLocalChecked(), New<String>("1.1.2").ToLocalChecked());
+    Set(exports, New<String>("version").ToLocalChecked(), New<String>("1.1.3").ToLocalChecked());
 
     // Define accessors
     SetAccessor(exports, New<String>("functions").ToLocalChecked(), Functions);
