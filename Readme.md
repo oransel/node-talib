@@ -4,7 +4,10 @@ A thin [node.js](http://nodejs.org) wrapper around [TA-LIB](http://ta-lib.org/),
 
 ## Donations
 
-Support this project for new features and improvements. 
+Support this project for new features and improvements.
+
+[PayPal](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=AZDHC49PNM7MY&item_name=talib)
+[Coinbase](https://commerce.coinbase.com/checkout/1da811db-5adf-4d02-9ab3-dd68e62234e1)
 
 |Bitcoin Address|
 |:---:|
