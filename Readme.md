@@ -9,11 +9,6 @@ Support this project for new features and improvements.
 * [PayPal](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=AZDHC49PNM7MY&item_name=talib)
 * [Coinbase](https://commerce.coinbase.com/checkout/1da811db-5adf-4d02-9ab3-dd68e62234e1)
 
-|Bitcoin Address|
-|:---:|
-|18gT1wmq3RMoLBm2ZFv4PhiYbU5CMAQC6P|
-|![alt text](https://raw.githubusercontent.com/oransel/node-talib/master/other/github-bitcoin-donations.png "18gT1wmq3RMoLBm2ZFv4PhiYbU5CMAQC6P")|
-
 A few of the pending improvements include:
 
 * Update dependencies and modernize the library
@@ -24,6 +19,8 @@ A few of the pending improvements include:
 * Official documentation
 * Better technincal support
 * ....and more.
+
+If talib helped you in any way, you can also leave me a tip at (BTC) 18gT1wmq3RMoLBm2ZFv4PhiYbU5CMAQC6P.
 
 ## Prerequisites
 
