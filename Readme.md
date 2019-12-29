@@ -20,7 +20,7 @@ A few of the pending improvements include:
 * Better technincal support
 * ....and more.
 
-If talib helped you in any way, you can also leave me a tip at (BTC) 18gT1wmq3RMoLBm2ZFv4PhiYbU5CMAQC6P.
+If this project helped you in any way, you can also leave me a tip at (BTC) 18gT1wmq3RMoLBm2ZFv4PhiYbU5CMAQC6P.
 
 ## Prerequisites
 
