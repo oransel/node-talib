@@ -5,6 +5,7 @@ build
 *.lo
 *.o
 node_modules
+package-lock.json
 
 // Windows build files
 *.lib
