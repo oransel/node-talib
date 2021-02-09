@@ -22,7 +22,7 @@
     "win32"
   ],
   "scripts": {
-    "install": "prebuild-install --verbose || node ./src/lib/build.js && node-gyp configure && node-gyp build",
+    "install": "prebuild-install || node ./src/lib/build.js && node-gyp configure && node-gyp build",
     "clean": "node ./src/lib/clean.js"
   },
   "main": "build/Release/talib.node",
