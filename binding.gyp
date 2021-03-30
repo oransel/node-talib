@@ -16,6 +16,11 @@
                     "../src/lib/lib/libta_libc_csr.a",
                 ]
             }],
+            ['OS=="freebsd"', {
+                "libraries": [
+                    "/usr/local/lib/libta_lib.a"
+                ]
+            }],
             ['OS=="mac"', {
                 'xcode_settings': {
                     'OTHER_CPLUSPLUSFLAGS': ['-std=c++11', '-stdlib=libc++'],
