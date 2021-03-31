@@ -37,6 +37,12 @@ if (process.platform == 'win32') {
     console.log(stdout, stderr);
   });
 
+} else if (process.platform == 'freebsd') {
+  if (fs.existsSync('/usr/local/lib/libta_lib.a')) {
+    console.log('package devel/ta-lib is installed. No need to build talib functions.')
+  } else {
+    console.error('Please install ta-lib from ports collection: pkg install devel/ta-lib');
+  };
 } else {
 
   var flags = '';
