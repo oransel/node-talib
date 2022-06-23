@@ -42,7 +42,7 @@
     "node": ">=8.16.0"
   },
   "dependencies": {
-    "nan": "^2.13.2"
+    "nan": "^2.16.0"
   },
   "devDependencies": {},
   "optionalDependencies": {},
