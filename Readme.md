@@ -188,7 +188,7 @@ For working examples look in the `examples/` directory. You can execute the exam
 
 ## License
 
-Copyright (c) 2012-2019 Mustafa Oransel
+Copyright (c) 2012-2023 Mustafa Oransel
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
