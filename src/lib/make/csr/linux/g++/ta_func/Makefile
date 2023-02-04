@@ -131,6 +131,7 @@ SOURCES =	../../../../../src/ta_func/ta_utility.c \
 		../../../../../src/ta_func/ta_HT_SINE.c \
 		../../../../../src/ta_func/ta_HT_TRENDLINE.c \
 		../../../../../src/ta_func/ta_HT_TRENDMODE.c \
+		../../../../../src/ta_func/ta_IMI.c \
 		../../../../../src/ta_func/ta_KAMA.c \
 		../../../../../src/ta_func/ta_LINEARREG.c \
 		../../../../../src/ta_func/ta_LINEARREG_ANGLE.c \
