@@ -1081,7 +1081,7 @@ void Init(Local<Object> exports, Local<Context> context) {
     TA_Initialize();
 
     // Define fields
-    Set(exports, New<String>("version").ToLocalChecked(), New<String>("1.1.3").ToLocalChecked());
+    Set(exports, New<String>("version").ToLocalChecked(), New<String>("1.1.6").ToLocalChecked());
 
     // Define accessors
     SetAccessor(exports, New<String>("functions").ToLocalChecked(), Functions);
