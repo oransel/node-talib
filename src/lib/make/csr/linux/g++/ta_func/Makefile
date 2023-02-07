@@ -209,6 +209,7 @@ OBJECTS =	../../../../../temp/csr/ta_utility.o \
 		../../../../../temp/csr/ta_ASIN.o \
 		../../../../../temp/csr/ta_ATAN.o \
 		../../../../../temp/csr/ta_ATR.o \
+		../../../../../temp/csr/ta_AVGDEV.o \
 		../../../../../temp/csr/ta_AVGPRICE.o \
 		../../../../../temp/csr/ta_BBANDS.o \
 		../../../../../temp/csr/ta_BETA.o \
@@ -292,6 +293,7 @@ OBJECTS =	../../../../../temp/csr/ta_utility.o \
 		../../../../../temp/csr/ta_HT_SINE.o \
 		../../../../../temp/csr/ta_HT_TRENDLINE.o \
 		../../../../../temp/csr/ta_HT_TRENDMODE.o \
+		../../../../../temp/csr/ta_IMI.o \
 		../../../../../temp/csr/ta_KAMA.o \
 		../../../../../temp/csr/ta_LINEARREG.o \
 		../../../../../temp/csr/ta_LINEARREG_ANGLE.o \
@@ -452,6 +454,9 @@ clean:
 
 ../../../../../temp/csr/ta_AVGPRICE.o: ../../../../../src/ta_func/ta_AVGPRICE.c
 	$(CC) -c $(CFLAGS) $(INCPATH) -o ../../../../../temp/csr/ta_AVGPRICE.o ../../../../../src/ta_func/ta_AVGPRICE.c
+
+../../../../../temp/csr/ta_AVGDEV.o: ../../../../../src/ta_func/ta_AVGDEV.c
+	$(CC) -c $(CFLAGS) $(INCPATH) -o ../../../../../temp/csr/ta_AVGDEV.o ../../../../../src/ta_func/ta_AVGDEV.c
 
 ../../../../../temp/csr/ta_BBANDS.o: ../../../../../src/ta_func/ta_BBANDS.c
 	$(CC) -c $(CFLAGS) $(INCPATH) -o ../../../../../temp/csr/ta_BBANDS.o ../../../../../src/ta_func/ta_BBANDS.c
@@ -698,6 +703,9 @@ clean:
 
 ../../../../../temp/csr/ta_HT_TRENDMODE.o: ../../../../../src/ta_func/ta_HT_TRENDMODE.c
 	$(CC) -c $(CFLAGS) $(INCPATH) -o ../../../../../temp/csr/ta_HT_TRENDMODE.o ../../../../../src/ta_func/ta_HT_TRENDMODE.c
+
+../../../../../temp/csr/ta_IMI.o: ../../../../../src/ta_func/ta_IMI.c
+	$(CC) -c $(CFLAGS) $(INCPATH) -o ../../../../../temp/csr/ta_IMI.o ../../../../../src/ta_func/ta_IMI.c
 
 ../../../../../temp/csr/ta_KAMA.o: ../../../../../src/ta_func/ta_KAMA.c
 	$(CC) -c $(CFLAGS) $(INCPATH) -o ../../../../../temp/csr/ta_KAMA.o ../../../../../src/ta_func/ta_KAMA.c
