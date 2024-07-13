@@ -7,7 +7,6 @@ A thin [node.js](http://nodejs.org) wrapper around [TA-LIB](http://ta-lib.org/),
 Support this project for new features and improvements.
 
 * [PayPal](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=AZDHC49PNM7MY&item_name=talib)
-* [Coinbase](https://commerce.coinbase.com/checkout/1da811db-5adf-4d02-9ab3-dd68e62234e1)
 
 A few of the pending improvements include:
 
@@ -188,7 +187,7 @@ For working examples look in the `examples/` directory. You can execute the exam
 
 ## License
 
-Copyright (c) 2012-2023 Mustafa Oransel
+Copyright (c) 2012-2024 Mustafa Oransel
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public

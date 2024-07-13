@@ -11,7 +11,7 @@ if(process.platform == 'win32') {
     console.log(stdout, stderr);
 	});
 } else {
-var flags = "";
+	var flags = "";
 	if (process.platform == 'darwin') {
 		var arch = process.arch == 'ia32' ? 'i386' : process.arch == 'x64' ? 'x86_64' : process.arch;
 		flags = 'export CFLAGS="-arch ' + arch + '" && export LDFLAGS="-arch ' + arch + '" && ';
