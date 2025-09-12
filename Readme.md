@@ -6,7 +6,7 @@ A thin [node.js](http://nodejs.org) wrapper around [TA-LIB](http://ta-lib.org/),
 
 Support this project for new features and improvements.
 
-* [PayPal](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=AZDHC49PNM7MY&item_name=talib)
+* [PayPal](https://www.paypal.com/ncp/payment/HBJX43G329P86)
 
 A few of the pending improvements include:
 
