@@ -1,6 +1,28 @@
-.DS_Store
-.git*
-build/
-examples/
+# Development files
+.git
+.github
+.editorconfig
+.vscode
+.idea
+
+# Source files (keep compiled binaries only)
+src/lib/make
+src/lib/temp
+src/lib/src
+
+# Tests and examples source
+test/
+examples/*.ts
+
+# Documentation
+*.md
+!Readme.md
+
+# Build artifacts
+*.log
+*.tgz
 node_modules/
-other/
+
+# OS files
+.DS_Store
+Thumbs.db

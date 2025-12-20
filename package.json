@@ -11,7 +11,7 @@
   ],
   "name": "talib",
   "description": "Technical Analysis Library",
-  "version": "1.1.6",
+  "version": "2.0.0",
   "funding": [
     {
       "type": "PayPal",
@@ -29,26 +29,41 @@
     "freebsd",
     "win32"
   ],
+  "type": "commonjs",
   "scripts": {
     "install": "node ./src/lib/build.js && node-gyp configure && node-gyp build",
-    "clean": "node ./src/lib/clean.js"
+    "clean": "node ./src/lib/clean.js",
+    "rebuild": "npm run clean && npm install",
+    "test": "node --test test/*.test.js",
+    "example": "node examples/adx.js"
   },
-  "main": "build/Release/talib.node",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "require": "./index.js",
+      "import": "./index.mjs"
+    }
+  },
   "engines": {
-    "node": ">=20.0.0"
+    "node": ">=18.0.0"
   },
   "dependencies": {
     "nan": "^2.20.0"
   },
+  "devDependencies": {},
   "keywords": [
     "talib",
+    "ta-lib",
+    "technical-analysis",
     "stocks",
-    "stock market"
+    "stock-market",
+    "trading",
+    "indicators",
+    "finance",
+    "cryptocurrency",
+    "forex"
   ],
-  "licenses": [
-    {
-      "type": "LGPL License",
-      "url": "http://www.gnu.org/licenses/lgpl.html"
-    }
-  ]
+  "license": "LGPL-3.0-or-later"
 }

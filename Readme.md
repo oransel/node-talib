@@ -1,193 +1,341 @@
 # node-talib
 
-A thin [node.js](http://nodejs.org) wrapper around [TA-LIB](http://ta-lib.org/), a technical analysis library with 100+ [indicators](http://ta-lib.org/function.html) such as ADX, MACD, RSI, Stochastic, Bollinger Bands, TRIX and candlestick pattern recognition.
+A modern [Node.js](https://nodejs.org) wrapper around [TA-LIB](http://ta-lib.org/), providing 100+ [technical analysis indicators](http://ta-lib.org/function.html) including ADX, MACD, RSI, Stochastic, Bollinger Bands, TRIX, and candlestick pattern recognition.
 
-## Supporting this project
+## Features
 
-Support this project for new features and improvements.
-
-* [PayPal](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=AZDHC49PNM7MY&item_name=talib)
-
-A few of the pending improvements include:
-
-* Update dependencies and modernize the library
-* Machine Learning integration for predictions, forecasting, etc.
-* Proper support for Windows and other platforms
-* Audit all functions
-* Add unit tests
-* Official documentation
-* Better technincal support
-* ....and more.
-
-If this project helped you in any way, you can also leave me a tip at (BTC) 18gT1wmq3RMoLBm2ZFv4PhiYbU5CMAQC6P.
+- **100+ Technical Indicators** - Comprehensive indicator library
+- **Modern JavaScript** - ES6+, async/await, Promises
+- **TypeScript Support** - Full type definitions included
+- **Dual API** - Both synchronous and asynchronous execution
+- **ESM & CommonJS** - Works with both module systems
+- **High Performance** - Native C++ bindings via N-API
+- **Cross-Platform** - Works on macOS, Linux, and Windows
+- **No Dependencies** - No external dependencies required
+- **Lightweight** - No unnecessary dependencies, small footprint
 
 ## Prerequisites
 
-* [Node.js](http://nodejs.org/)
-* [Windows Build Tools 2015](https://www.npmjs.com/package/windows-build-tools) (Windows Only)
-
-If you are using __Windows__, you will need to install [Windows Build Tools](https://www.npmjs.com/package/windows-build-tools) with the "--vs2015" param, which will download and install Visual C++ Build Tools 2015 and Python 2.7, configuring your machine and npm appropriately.
+- **Node.js** >= 18.0.0
+- **Python** (for node-gyp)
+- **C++ Build Tools**
+  - **macOS**: Xcode Command Line Tools (`xcode-select --install`)
+  - **Linux**: `build-essential` package
+  - **Windows**: [Visual Studio Build Tools](https://visualstudio.microsoft.com/downloads/)
 
 ## Installation
 
-To install the most recent release from npm, run:
+```bash
+npm install talib
+```
 
-    npm install talib
+## Quick Start
 
-## Building
+### CommonJS
 
-The source code is available at [github](http://github.com/oransel/node-talib). You can either clone the repository or download a zip file of the latest release.
+```javascript
+const talib = require('talib');
 
-Once you have the source, you can build the module by running
+// Synchronous execution
+const result = talib.execute({
+  name: 'SMA',
+  startIdx: 0,
+  endIdx: prices.length - 1,
+  inReal: prices,
+  optInTimePeriod: 20
+});
 
-	npm install
+console.log(result.result.outReal);
+```
 
-in the main directory. If everything goes well, the module will be available in the build/Release folder.
+### ES Modules
+
+```javascript
+import talib from 'talib';
+
+const result = talib.execute({
+  name: 'RSI',
+  startIdx: 0,
+  endIdx: prices.length - 1,
+  inReal: prices,
+  optInTimePeriod: 14
+});
+```
+
+### TypeScript
+
+```typescript
+import * as talib from 'talib';
+
+const result: talib.ExecuteResult = talib.execute({
+  name: 'MACD',
+  startIdx: 0,
+  endIdx: prices.length - 1,
+  inReal: prices,
+  optInFastPeriod: 12,
+  optInSlowPeriod: 26,
+  optInSignalPeriod: 9
+});
+```
+
+## Building from Source
+
+```bash
+git clone https://github.com/oransel/node-talib.git
+cd node-talib
+npm install
+```
+
+The module will be built automatically during installation.
+
+## API Reference
+
+### Module Properties
+
+```javascript
+talib.version           // TA-LIB version string
+talib.functions         // Array of all available functions
+talib.functionUnstIds   // Function unstable period IDs
+```
+
+### Methods
+
+#### `talib.execute(params[, callback])`
+
+Execute a technical analysis function.
+
+**Synchronous:**
+```javascript
+const result = talib.execute({
+  name: 'SMA',
+  startIdx: 0,
+  endIdx: data.length - 1,
+  inReal: data,
+  optInTimePeriod: 20
+});
+```
+
+**Asynchronous:**
+```javascript
+talib.execute({
+  name: 'SMA',
+  startIdx: 0,
+  endIdx: data.length - 1,
+  inReal: data,
+  optInTimePeriod: 20
+}, (err, result) => {
+  if (err) return console.error(err);
+  console.log(result);
+});
+```
+
+**With Async/Await:**
+```javascript
+const result = await new Promise((resolve, reject) => {
+  talib.execute(params, (err, result) => {
+    if (err) reject(err);
+    else resolve(result);
+  });
+});
+```
+
+#### `talib.explain(functionName)`
+
+Get detailed information about a function's parameters.
+
+```javascript
+const info = talib.explain('ADX');
+console.log(info);
+// {
+//   name: 'ADX',
+//   group: 'Momentum Indicators',
+//   hint: 'Average Directional Movement Index',
+//   inputs: [...],
+//   optInputs: [...],
+//   outputs: [...]
+// }
+```
+
+#### `talib.setUnstablePeriod(functionId, period)`
+
+Set the unstable period for a function.
+
+```javascript
+talib.setUnstablePeriod(talib.functionUnstIds.TA_FUNC_UNST_EMA, 30);
+```
+
+## Common Indicators
+
+### Moving Averages
+
+```javascript
+// Simple Moving Average
+const sma = talib.execute({
+  name: 'SMA',
+  startIdx: 0,
+  endIdx: prices.length - 1,
+  inReal: prices,
+  optInTimePeriod: 20
+});
+
+// Exponential Moving Average
+const ema = talib.execute({
+  name: 'EMA',
+  startIdx: 0,
+  endIdx: prices.length - 1,
+  inReal: prices,
+  optInTimePeriod: 12
+});
+```
+
+### Momentum Indicators
+
+```javascript
+// Relative Strength Index
+const rsi = talib.execute({
+  name: 'RSI',
+  startIdx: 0,
+  endIdx: prices.length - 1,
+  inReal: prices,
+  optInTimePeriod: 14
+});
+
+// MACD
+const macd = talib.execute({
+  name: 'MACD',
+  startIdx: 0,
+  endIdx: prices.length - 1,
+  inReal: prices,
+  optInFastPeriod: 12,
+  optInSlowPeriod: 26,
+  optInSignalPeriod: 9
+});
+```
+
+### Volatility Indicators
+
+```javascript
+// Bollinger Bands
+const bbands = talib.execute({
+  name: 'BBANDS',
+  startIdx: 0,
+  endIdx: prices.length - 1,
+  inReal: prices,
+  optInTimePeriod: 20,
+  optInNbDevUp: 2,
+  optInNbDevDn: 2,
+  optInMAType: 0 // SMA
+});
+
+// Average True Range
+const atr = talib.execute({
+  name: 'ATR',
+  startIdx: 0,
+  endIdx: prices.length - 1,
+  high: highs,
+  low: lows,
+  close: closes,
+  optInTimePeriod: 14
+});
+```
+
+### Moving Average Types
+
+When an indicator accepts `optInMAType`:
+
+```javascript
+const MAType = {
+  SMA: 0,    // Simple Moving Average
+  EMA: 1,    // Exponential Moving Average
+  WMA: 2,    // Weighted Moving Average
+  DEMA: 3,   // Double Exponential Moving Average
+  TEMA: 4,   // Triple Exponential Moving Average
+  TRIMA: 5,  // Triangular Moving Average
+  KAMA: 6,   // Kaufman Adaptive Moving Average
+  MAMA: 7,   // MESA Adaptive Moving Average
+  T3: 8      // Triple Exponential Moving Average (T3)
+};
+```
 
 ## Examples
 
-TALib is very simple to use.
+Check the `examples/` directory for more examples:
 
-``` js
-// load the module and display its version
-var talib = require('./build/Release/talib');
-console.log("TALib Version: " + talib.version);
+```bash
+# Run basic example
+node examples/adx.js
 
-// Display all available indicator function names
-var functions = talib.functions;
-for (i in functions) {
-	console.log(functions[i].name);
-}
+# Run modern async example
+node examples/adx-modern.js
+
+# Run synchronous example
+node examples/adx-sync.js
+
+# Run ES module example
+node examples/esm-example.mjs
+
+# Run multiple indicators example
+node examples/multiple-indicators.js
 ```
 
-Assuming the market data is readily available, you can calculate an indicator by calling the `execute` function with the name of the indicator and required input parameters.
+## Testing
 
-``` js
-// market data as arrays
-var marketData = { open: [...], close: [...], high: [...], low: [...], volume: [...] };
-
-// execute Average Directional Movement Index indicator with time period 9
-talib.execute({
-    name: "ADX",
-    startIdx: 0,
-    endIdx: marketData.close.length - 1,
-    high: marketData.high,
-    low: marketData.low,
-    close: marketData.close,
-    optInTimePeriod: 9
-}, function (err, result) {
-
-    console.log("ADX Function Results:");
-    console.log(result);
-
-});
+```bash
+npm test
 ```
 
-you can also make synchronized call
-``` js
-var result = talib.execute({
-    name: "ADX",
-    startIdx: 0,
-    endIdx: marketData.close.length - 1,
-    high: marketData.high,
-    low: marketData.low,
-    close: marketData.close,
-    optInTimePeriod: 9
-});
+## Troubleshooting
+
+### Build Errors
+
+If you encounter build errors:
+
+```bash
+# Clean and rebuild
+npm run clean
+npm install
+
+# Or use rebuild script
+npm run rebuild
 ```
 
-Input parameters can be discovered by:
+### Python Not Found
 
-``` js
-// Retreive Average Directional Movement Index indicator specifications
-var function_desc = talib.explain("ADX");
-console.dir(function_desc);
+Ensure Python is installed and in your PATH:
 
-
-{
-  // Function Name
-  name: 'ADX',
-
-  // Function Group Name
-  group: 'Momentum Indicators',
-
-  // Function Description
-  hint: 'Average Directional Movement Index',
-
-  // Input Parameters
-  inputs:
-   [ {
-       // Parameter Name
-       name: 'inPriceHLC',
-
-       // Parameter Type
-       //   price, real, or integer
-       type: 'price',
-
-       // Parameter keys to be passed in when calling the function
-       //   open, high, low, close, volume,
-       //   openinterest, or timestamp
-       flags: [ 'high', 'low', 'close' ] } ],
-
-  // Optional Input Parameters
-  optInputs:
-   [ {
-       // Parameter Name
-       name: 'optInTimePeriod',
-
-       // Parameter Display Label
-       displayName: 'Time Period',
-
-       // Parameter Default Value
-       defaultValue: 14,
-
-       // Parameter Description
-       hint: 'Number of period',
-
-       // Parameter Type
-       //   real_range, real_integer,
-       //   integer_range, or integer_list
-       type: 'integer_range' } ],
-
-  // Output Values
-  outputs:
-   [ {
-       // Value Name
-       name: 'outReal',
-
-       // Value Type
-       //   real or integer
-       type: 'real',
-
-       // Suggested Value Visualization Hint
-       //   line, line_dot, line_dash, dot,
-       //   histogram, pattern_bool, pattern_bull_bear,
-       //   pattern_strength, positive, negative, zero,
-       //   limit_upper, or limit_lower
-       flags: [ 'line' ] } ] }
+```bash
+# Check Python installation
+python --version
+# or
+python3 --version
 ```
 
-Some indicators require or accept a `optInMAType` flag:
+### Windows Build Issues
 
-```
-SMA   = 0
-EMA   = 1
-WMA   = 2
-DEMA  = 3
-TEMA  = 4
-TRIMA = 5
-KAMA  = 6
-MAMA  = 7
-T3    = 8
-```
+Install Visual Studio Build Tools:
+- Download from [Visual Studio Downloads](https://visualstudio.microsoft.com/downloads/)
+- Select "Desktop development with C++"
 
-For working examples look in the `examples/` directory. You can execute the examples using node.
+## Contributing
 
-	node examples/adx.js
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## Support
+
+If this project helped you, consider supporting its development:
+
+- [PayPal](https://www.paypal.com/ncp/payment/HBJX43G329P86)
+- BTC: 18gT1wmq3RMoLBm2ZFv4PhiYbU5CMAQC6P
+
+## Links
+
+- [TA-LIB Official Website](http://ta-lib.org/)
+- [TA-LIB Function List](http://ta-lib.org/function.html)
+- [GitHub Repository](https://github.com/oransel/node-talib)
 
 ## License
 
-Copyright (c) 2012-2024 Mustafa Oransel
+Copyright (c) 2012-2026 Mustafa Oransel
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
