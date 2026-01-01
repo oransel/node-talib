@@ -32,7 +32,8 @@ if (process.platform === 'win32') {
   frameworkVersions.sort((a, b) => (a.index > b.index ? 1 : a.index < b.index ? -1 : 0));
   const frameworkVersion = frameworkVersions.pop().path;
 
-  process.chdir('./src/lib/make/csr/windows/msbuild/');
+  const makeDir = path.join(__dirname, 'make/csr/windows/msbuild/');
+  process.chdir(makeDir);
   exec(
     `${msbuildPath} ./ta_lib.sln /p:FrameworkPathOverride="${frameworkVersion}" /property:Configuration=csr /property:Platform=${arch}`,
     (err, stdout, stderr) => {
@@ -57,7 +58,8 @@ if (process.platform === 'win32') {
     const arch = process.arch === 'ia32' ? 'i386' : process.arch === 'x64' ? 'x86_64' : process.arch;
     flags = `MACOSX_DEPLOYMENT_TARGET=10.7 export CFLAGS="-arch ${arch}" && export LDFLAGS="-arch ${arch}" && `;
   }
-  process.chdir('./src/lib/make/csr/linux/g++/');
+  const makeDir = path.join(__dirname, 'make/csr/linux/g++/');
+  process.chdir(makeDir);
   exec(`${flags}make`, (err, stdout, stderr) => {
     if (err) {
       console.error('Build failed:', err);
