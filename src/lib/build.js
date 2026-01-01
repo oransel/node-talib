@@ -1,41 +1,72 @@
-const { exec } = require('child_process');
+const { exec, execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
 console.log('building talib functions...');
 
 if (process.platform === 'win32') {
+  const arch = process.arch === 'x64' ? 'x64' : 'Win32';
+  
+  // Try to find MSBuild using vswhere (modern approach)
   let msbuildPath;
-  let frameworkPath;
-  let arch;
-
-  if (process.arch === 'x64') {
-    msbuildPath = '"C:/Program Files (x86)/MSBuild/14.0/Bin/MSBuild.exe"';
-    frameworkPath = 'C:/Program Files (x86)/Reference Assemblies/Microsoft/Framework/.NETFramework';
-    arch = 'x64';
-  } else {
-    msbuildPath = '"C:/Program Files/MSBuild/14.0/Bin/MSBuild.exe"';
-    frameworkPath = 'C:/Program Files/Reference Assemblies/Microsoft/Framework/.NETFramework';
-    arch = 'Win32';
+  try {
+    const vswherePath = 'C:\\Program Files (x86)\\Microsoft Visual Studio\\Installer\\vswhere.exe';
+    if (fs.existsSync(vswherePath)) {
+      const vsPath = execSync(
+        `"${vswherePath}" -latest -requires Microsoft.Component.MSBuild -property installationPath`,
+        { encoding: 'utf8' }
+      ).trim();
+      
+      // Try different MSBuild versions
+      const msbuildPaths = [
+        path.join(vsPath, 'MSBuild\\Current\\Bin\\MSBuild.exe'),
+        path.join(vsPath, 'MSBuild\\15.0\\Bin\\MSBuild.exe')
+      ];
+      
+      for (const p of msbuildPaths) {
+        if (fs.existsSync(p)) {
+          msbuildPath = `"${p}"`;
+          break;
+        }
+      }
+    }
+  } catch (e) {
+    // vswhere not found or failed
   }
-
-  const frameworkVersions = fs.readdirSync(frameworkPath).map((val) => ({
-    index: val,
-    path: path.join(frameworkPath, val)
-  }));
-
-  if (!frameworkVersions.length) {
-    console.error('No .NETFramework versions installed!');
+  
+  // Fallback to older MSBuild locations
+  if (!msbuildPath) {
+    const possiblePaths = [
+      'C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\MSBuild\\Current\\Bin\\MSBuild.exe',
+      'C:\\Program Files\\Microsoft Visual Studio\\2022\\Professional\\MSBuild\\Current\\Bin\\MSBuild.exe',
+      'C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\MSBuild\\Current\\Bin\\MSBuild.exe',
+      'C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Enterprise\\MSBuild\\Current\\Bin\\MSBuild.exe',
+      'C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Professional\\MSBuild\\Current\\Bin\\MSBuild.exe',
+      'C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\MSBuild\\Current\\Bin\\MSBuild.exe',
+      'C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Enterprise\\MSBuild\\15.0\\Bin\\MSBuild.exe',
+      'C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Professional\\MSBuild\\15.0\\Bin\\MSBuild.exe',
+      'C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\MSBuild\\15.0\\Bin\\MSBuild.exe',
+      'C:\\Program Files (x86)\\MSBuild\\14.0\\Bin\\MSBuild.exe',
+      'C:\\Program Files\\MSBuild\\14.0\\Bin\\MSBuild.exe'
+    ];
+    
+    for (const p of possiblePaths) {
+      if (fs.existsSync(p)) {
+        msbuildPath = `"${p}"`;
+        break;
+      }
+    }
+  }
+  
+  if (!msbuildPath) {
+    console.error('MSBuild not found. Please install Visual Studio Build Tools.');
     process.exit(1);
   }
-
-  frameworkVersions.sort((a, b) => (a.index > b.index ? 1 : a.index < b.index ? -1 : 0));
-  const frameworkVersion = frameworkVersions.pop().path;
 
   const makeDir = path.join(__dirname, 'make/csr/windows/msbuild/');
   process.chdir(makeDir);
   exec(
-    `${msbuildPath} ./ta_lib.sln /p:FrameworkPathOverride="${frameworkVersion}" /property:Configuration=csr /property:Platform=${arch}`,
+    `${msbuildPath} ./ta_lib.sln /property:Configuration=csr /property:Platform=${arch}`,
     (err, stdout, stderr) => {
       if (err) {
         console.error('Build failed:', err);
