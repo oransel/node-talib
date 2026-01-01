@@ -16,7 +16,7 @@ A modern [Node.js](https://nodejs.org) wrapper around [TA-LIB](http://ta-lib.org
 
 ## Prerequisites
 
-- **Node.js** >= 18.0.0
+- **Node.js** >= 22.0.0
 - **Python** (for node-gyp)
 - **C++ Build Tools**
   - **macOS**: Xcode Command Line Tools (`xcode-select --install`)
