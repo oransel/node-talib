@@ -33,6 +33,19 @@ jobs:
         if: runner.os == 'Windows'
         uses: microsoft/setup-msbuild@v2
       
+      - name: Setup Windows SDK (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          # GitHub Actions runners should have Windows SDK, but let's verify
+          $sdkPath = "C:\Program Files (x86)\Windows Kits\10\Include"
+          if (Test-Path $sdkPath) {
+            Write-Host "Windows SDK found at: $sdkPath"
+            Get-ChildItem $sdkPath | Select-Object Name
+          } else {
+            Write-Host "Windows SDK not found at expected location"
+          }
+      
       - name: Install dependencies
         run: npm install
       

@@ -65,17 +65,21 @@ if (process.platform === 'win32') {
 
   const makeDir = path.join(__dirname, 'make/csr/windows/msbuild/');
   process.chdir(makeDir);
-  exec(
-    `${msbuildPath} ./ta_lib.sln /property:Configuration=csr /property:Platform=${arch}`,
-    (err, stdout, stderr) => {
-      if (err) {
-        console.error('Build failed:', err);
-        process.exit(1);
-      }
-      console.log(stdout);
-      if (stderr) console.error(stderr);
+  
+  // Upgrade the solution to use the current toolset
+  const buildCmd = `${msbuildPath} ./ta_lib.sln /t:Rebuild /property:Configuration=csr /property:Platform=${arch} /property:PlatformToolset=v143 /property:WindowsTargetPlatformVersion=10.0 /verbosity:minimal`;
+  console.log(`Running: ${buildCmd}`);
+  
+  exec(buildCmd, (err, stdout, stderr) => {
+    if (err) {
+      console.error('Build failed:', err);
+      console.error('stdout:', stdout);
+      console.error('stderr:', stderr);
+      process.exit(1);
     }
-  );
+    console.log(stdout);
+    if (stderr) console.error(stderr);
+  });
 } else if (process.platform === 'freebsd') {
   if (fs.existsSync('/usr/local/lib/libta_lib.a')) {
     console.log('package devel/ta-lib is installed. No need to build talib functions.');
