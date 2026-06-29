@@ -47,12 +47,11 @@
     }
   },
   "engines": {
-    "node": ">=22.0.0"
+    "node": ">=24.0.0"
   },
   "dependencies": {
-    "nan": "^2.20.0"
+    "nan": "^2.27.0"
   },
-  "devDependencies": {},
   "keywords": [
     "talib",
     "ta-lib",
