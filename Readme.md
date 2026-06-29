@@ -16,12 +16,14 @@ A modern [Node.js](https://nodejs.org) wrapper around [TA-LIB](http://ta-lib.org
 
 ## Prerequisites
 
-- **Node.js** >= 22.0.0
+- **Node.js** >= 24.0.0
 - **Python** (for node-gyp)
 - **C++ Build Tools**
   - **macOS**: Xcode Command Line Tools (`xcode-select --install`)
   - **Linux**: `build-essential` package
-  - **Windows**: [Visual Studio Build Tools](https://visualstudio.microsoft.com/downloads/)
+  - **Windows**: [Visual Studio Build Tools](https://visualstudio.microsoft.com/downloads/) with the "Desktop development with C++" workload
+
+> **Windows + recent Visual Studio:** Newer Visual Studio releases (e.g. VS 2026 / v18) are only detected by `node-gyp` >= 12.1.0. The `node-gyp` bundled with npm may be older and fail with `Could not find any Visual Studio installation to use`. See [Windows Build Issues](#windows-build-issues) if you hit this.
 
 ## Installation
 
@@ -315,6 +317,28 @@ python3 --version
 Install Visual Studio Build Tools:
 - Download from [Visual Studio Downloads](https://visualstudio.microsoft.com/downloads/)
 - Select "Desktop development with C++"
+
+**`Could not find any Visual Studio installation to use` / `unknown version "undefined"`**
+
+This means your `node-gyp` is too old to recognize your installed Visual Studio. Visual Studio 2026 (v18) requires `node-gyp` >= 12.1.0, but the copy bundled with npm is often older. Upgrade `node-gyp` and rebuild:
+
+```bash
+# Install a node-gyp that knows about modern Visual Studio
+npm install --global node-gyp@latest
+
+# Then rebuild from a cloned repo using that node-gyp
+npm run clean
+node ./src/lib/build.js
+node-gyp configure
+node-gyp build
+```
+
+When installing `talib` as a dependency (so you can't run the steps above directly), point npm at the upgraded `node-gyp` so its install step uses it:
+
+```bash
+npm install --global node-gyp@latest
+npm config set node_gyp "$(npm prefix -g)/node_modules/node-gyp/bin/node-gyp.js"
+```
 
 ## Contributing
 
