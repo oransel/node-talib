@@ -38,11 +38,11 @@ jobs:
         shell: pwsh
         run: |
           # windows-latest now ships Visual Studio 18 (2026). The node-gyp bundled
-          # with Node 22's npm (11.5.0) can't detect it. node-gyp >= 12.1.0 adds
-          # VS 2026 (18.x) support, so install it globally and tell npm to use it
-          # for lifecycle scripts (our package's install script calls node-gyp).
+          # with Node 22's npm (11.5.0) can't detect it ("unknown version undefined").
+          # node-gyp >= 12.1.0 adds VS 2026 (18.x) support. Installing it globally
+          # puts node-gyp 12.x first on PATH for the plain build step below, which
+          # avoids npm's bundled-node-gyp shim used inside lifecycle scripts.
           npm install --global node-gyp@latest
-          npm prefix -g | % { npm config set node_gyp "$_\node_modules\node-gyp\bin\node-gyp.js" }
           node-gyp --version
       
       - name: Setup Windows SDK (Windows)
@@ -58,9 +58,28 @@ jobs:
             Write-Host "Windows SDK not found at expected location"
           }
       
-      - name: Install dependencies
+      - name: Install dependencies (non-Windows)
+        if: runner.os != 'Windows'
         run: npm install
-      
+
+      - name: Install dependencies (Windows)
+        if: runner.os == 'Windows'
+        # Skip the lifecycle "install" script so npm's bundled node-gyp (11.5.0,
+        # which can't see VS 2026) is never invoked. The native addon is built in
+        # the next step using the global node-gyp 12.x.
+        run: npm install --ignore-scripts
+
+      - name: Build native addon (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        # In a plain step the global node-gyp 12.x is first on PATH (no npm
+        # lifecycle shim), so it detects Visual Studio 2026 correctly. This mirrors
+        # the package's "install" script: build the TA-Lib static libs, then the addon.
+        run: |
+          node ./src/lib/build.js
+          node-gyp configure
+          node-gyp build
+
       - name: Run tests
         run: npm test
       
