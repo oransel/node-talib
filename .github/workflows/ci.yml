@@ -32,6 +32,18 @@ jobs:
       - name: Setup MSBuild (Windows)
         if: runner.os == 'Windows'
         uses: microsoft/setup-msbuild@v2
+
+      - name: Upgrade node-gyp for Visual Studio 2026 (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          # windows-latest now ships Visual Studio 18 (2026). The node-gyp bundled
+          # with Node 22's npm (11.5.0) can't detect it. node-gyp >= 12.1.0 adds
+          # VS 2026 (18.x) support, so install it globally and tell npm to use it
+          # for lifecycle scripts (our package's install script calls node-gyp).
+          npm install --global node-gyp@latest
+          npm prefix -g | % { npm config set node_gyp "$_\node_modules\node-gyp\bin\node-gyp.js" }
+          node-gyp --version
       
       - name: Setup Windows SDK (Windows)
         if: runner.os == 'Windows'
