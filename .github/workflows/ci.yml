@@ -13,7 +13,7 @@ jobs:
     
     strategy:
       matrix:
-        node-version: [22.x]
+        node-version: [24.x]
         os: [ubuntu-latest, macos-latest, windows-latest]
     
     steps:
@@ -32,6 +32,18 @@ jobs:
       - name: Setup MSBuild (Windows)
         if: runner.os == 'Windows'
         uses: microsoft/setup-msbuild@v2
+
+      - name: Upgrade node-gyp for Visual Studio 2026 (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          # windows-latest now ships Visual Studio 18 (2026). The node-gyp bundled
+          # with Node 22's npm (11.5.0) can't detect it ("unknown version undefined").
+          # node-gyp >= 12.1.0 adds VS 2026 (18.x) support. Installing it globally
+          # puts node-gyp 12.x first on PATH for the plain build step below, which
+          # avoids npm's bundled-node-gyp shim used inside lifecycle scripts.
+          npm install --global node-gyp@latest
+          node-gyp --version
       
       - name: Setup Windows SDK (Windows)
         if: runner.os == 'Windows'
@@ -46,9 +58,28 @@ jobs:
             Write-Host "Windows SDK not found at expected location"
           }
       
-      - name: Install dependencies
+      - name: Install dependencies (non-Windows)
+        if: runner.os != 'Windows'
         run: npm install
-      
+
+      - name: Install dependencies (Windows)
+        if: runner.os == 'Windows'
+        # Skip the lifecycle "install" script so npm's bundled node-gyp (11.5.0,
+        # which can't see VS 2026) is never invoked. The native addon is built in
+        # the next step using the global node-gyp 12.x.
+        run: npm install --ignore-scripts
+
+      - name: Build native addon (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        # In a plain step the global node-gyp 12.x is first on PATH (no npm
+        # lifecycle shim), so it detects Visual Studio 2026 correctly. This mirrors
+        # the package's "install" script: build the TA-Lib static libs, then the addon.
+        run: |
+          node ./src/lib/build.js
+          node-gyp configure
+          node-gyp build
+
       - name: Run tests
         run: npm test
       
@@ -65,7 +96,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20.x'
+          node-version: '24.x'
       
       - name: Check formatting
         run: |
