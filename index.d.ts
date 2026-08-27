@@ -2,6 +2,9 @@
  * node-talib - Technical Analysis Library
  * TypeScript definitions
  */
+
+import type * as TechnicalIndicator from './TechnicalIndicator';
+
 declare module 'talib' {
 
   namespace talib {
@@ -115,7 +118,7 @@ declare module 'talib' {
      * Execute parameters
      */
     export interface ExecuteParameters extends MarketData {
-      name: string;
+      name: typeof TechnicalIndicator;
       startIdx: number;
       endIdx: number;
       [key: string]: any; // For optional parameters like optInTimePeriod
