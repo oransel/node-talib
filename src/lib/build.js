@@ -95,6 +95,20 @@ if (process.platform === 'win32') {
   }
   const makeDir = path.join(__dirname, 'make/csr/linux/g++/');
   process.chdir(makeDir);
+  // The npm tarball ships prebuilt .o objects in src/lib/temp/csr/.
+  // make sees them as up-to-date, skips recompilation and archives stale
+  // objects -> "undefined symbol: TA_DEF_*" at dlopen. Drop them so the
+  // full source tree is recompiled for the current toolchain.
+  try {
+    const csrDir = path.join(__dirname, 'temp/csr');
+    for (const f of fs.readdirSync(csrDir)) {
+      if (f.endsWith('.o') || f.endsWith('.obj')) {
+        fs.unlinkSync(path.join(csrDir, f));
+      }
+    }
+  } catch (cleanErr) {
+    console.warn('prebuilt object cleanup failed (non-fatal):', cleanErr.message);
+  }
   exec(`${flags}make`, (err, stdout, stderr) => {
     if (err) {
       console.error('Build failed:', err);
@@ -102,5 +116,19 @@ if (process.platform === 'win32') {
     }
     console.log(stdout);
     if (stderr) console.error(stderr);
+    // Newer binutils (Debian trixie, binutils >= 2.44) reject .a archives
+    // without a symbol index: "error adding symbols: archive has no index".
+    // Best-effort ranlib pass over the built archives fixes the link step.
+    try {
+      const libDir = path.join(__dirname, 'lib');
+      for (const f of fs.readdirSync(libDir)) {
+        if (f.endsWith('.a')) {
+          console.log(`ranlib ${f}`);
+          execSync(`ranlib ${path.join(libDir, f)}`);
+        }
+      }
+    } catch (ranlibErr) {
+      console.warn('ranlib pass failed (non-fatal):', ranlibErr.message);
+    }
   });
 }
