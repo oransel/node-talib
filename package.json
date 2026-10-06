@@ -1,17 +1,8 @@
 {
   "author": "Mustafa Oransel",
-  "contributors": [
-    "Alfred Omega",
-    "Vedran Opacic",
-    "Kelvin Foo",
-    "Chris McGee",
-    "Marek Magdziak",
-    "hao-wang",
-    "Guido"
-  ],
   "name": "talib",
   "description": "Technical Analysis Library",
-  "version": "2.0.5",
+  "version": "2.0.6",
   "funding": [
     {
       "type": "PayPal",
