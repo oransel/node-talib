@@ -13,7 +13,7 @@ if (process.platform === 'win32') {
     const vswherePath = 'C:\\Program Files (x86)\\Microsoft Visual Studio\\Installer\\vswhere.exe';
     if (fs.existsSync(vswherePath)) {
       const vsPath = execSync(
-        `"${vswherePath}" -latest -requires Microsoft.Component.MSBuild -property installationPath`,
+        `"${vswherePath}" -products * -latest -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath`,
         { encoding: 'utf8' }
       ).trim();
       
@@ -34,22 +34,33 @@ if (process.platform === 'win32') {
     // vswhere not found or failed
   }
   
-  // Fallback to older MSBuild locations
+  // Fallback to scanning standard MSBuild locations.
+  // Covers all editions (including BuildTools, which the standalone Build
+  // Tools installer and the Chocolatey/winget packages use) for VS 2017+.
   if (!msbuildPath) {
-    const possiblePaths = [
-      'C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\MSBuild\\Current\\Bin\\MSBuild.exe',
-      'C:\\Program Files\\Microsoft Visual Studio\\2022\\Professional\\MSBuild\\Current\\Bin\\MSBuild.exe',
-      'C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\MSBuild\\Current\\Bin\\MSBuild.exe',
-      'C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Enterprise\\MSBuild\\Current\\Bin\\MSBuild.exe',
-      'C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Professional\\MSBuild\\Current\\Bin\\MSBuild.exe',
-      'C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\MSBuild\\Current\\Bin\\MSBuild.exe',
-      'C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Enterprise\\MSBuild\\15.0\\Bin\\MSBuild.exe',
-      'C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Professional\\MSBuild\\15.0\\Bin\\MSBuild.exe',
-      'C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\MSBuild\\15.0\\Bin\\MSBuild.exe',
+    const roots = [
+      'C:\\Program Files\\Microsoft Visual Studio',
+      'C:\\Program Files (x86)\\Microsoft Visual Studio'
+    ];
+    const years = ['2022', '2019', '2017'];
+    const editions = ['Enterprise', 'Professional', 'Community', 'BuildTools'];
+    const possiblePaths = [];
+    for (const root of roots) {
+      for (const year of years) {
+        for (const edition of editions) {
+          if (year === '2017') {
+            possiblePaths.push(`${root}\\${year}\\${edition}\\MSBuild\\15.0\\Bin\\MSBuild.exe`);
+          } else {
+            possiblePaths.push(`${root}\\${year}\\${edition}\\MSBuild\\Current\\Bin\\MSBuild.exe`);
+          }
+        }
+      }
+    }
+    possiblePaths.push(
       'C:\\Program Files (x86)\\MSBuild\\14.0\\Bin\\MSBuild.exe',
       'C:\\Program Files\\MSBuild\\14.0\\Bin\\MSBuild.exe'
-    ];
-    
+    );
+
     for (const p of possiblePaths) {
       if (fs.existsSync(p)) {
         msbuildPath = `"${p}"`;
@@ -63,11 +74,19 @@ if (process.platform === 'win32') {
     process.exit(1);
   }
 
+  // Map the VS release year in the MSBuild path to the MSVC platform toolset,
+  // so builds also work when MSBuild comes from VS 2019/2017 (v143 is VS 2022-only).
+  const yearMatch = msbuildPath.match(/Visual Studio\\(\d{4})\\/);
+  const vsYear = yearMatch ? parseInt(yearMatch[1], 10) : 0;
+  let toolset = 'v143'; // default: VS 2022 toolset
+  if (vsYear === 2017) toolset = 'v141';
+  else if (vsYear === 2019) toolset = 'v142';
+
   const makeDir = path.join(__dirname, 'make/csr/windows/msbuild/');
   process.chdir(makeDir);
   
-  // Upgrade the solution to use the current toolset
-  const buildCmd = `${msbuildPath} ./ta_lib.sln /t:Rebuild /property:Configuration=csr /property:Platform=${arch} /property:PlatformToolset=v143 /property:WindowsTargetPlatformVersion=10.0 /verbosity:minimal`;
+  // Upgrade the solution to use the detected toolset
+  const buildCmd = `${msbuildPath} ./ta_lib.sln /t:Rebuild /property:Configuration=csr /property:Platform=${arch} /property:PlatformToolset=${toolset} /property:WindowsTargetPlatformVersion=10.0 /verbosity:minimal`;
   console.log(`Running: ${buildCmd}`);
   
   exec(buildCmd, (err, stdout, stderr) => {
